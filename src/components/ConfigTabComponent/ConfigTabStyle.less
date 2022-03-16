@@ -1,0 +1,21 @@
+@import '../../assets/AppColors.less';
+
+.configTabTemplate {
+  background: @config-tab-background-color;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .configTabContent {
+    width: 95%;
+    height: 95%;
+    max-width: 95%;
+    max-height: 95%;
+    border: 1px solid black;
+    box-sizing: border-box;
+    background: @content-background-color;
+  }
+}

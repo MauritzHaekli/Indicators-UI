@@ -1,0 +1,21 @@
+@import '../../assets/AppColors.less';
+
+.statisticsTabTemplate {
+  background: @statistics-tab-background-color;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .statisticsTabContent {
+    width: 95%;
+    height: 95%;
+    max-width: 95%;
+    max-height: 95%;
+    border: 1px solid black;
+    box-sizing: border-box;
+    background: @content-background-color;
+  }
+}

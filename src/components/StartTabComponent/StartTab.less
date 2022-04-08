@@ -37,24 +37,57 @@
         font-size: large;
       }
       .startTabParameterSelection {
-        margin-top: 20px;
+        display: flex;
 
         select {
           max-width: 120px;
-          min-width: 100px;
-          min-height: 30px;
+          min-width: 60px;
+          min-height: 22px;
           margin-top: 10px;
           border: thin solid ;
-          text-align: center;
           border-radius: 6px;
           background-color: white;
           font: inherit;
-          font-size: 14px;
+          font-size: 13px;
+          text-align-last: center;
+        }
+      }
+      .startTabStrategySelection {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+
+        .startTabBuyingStrategySelection, .startTabSellingStrategySelection {
+
+          .buyingStrategyParameterSelection, .sellingStrategyParameterSelection {
+            display: flex;
+            flex-direction: row;
+
+            .buyingStrategyIndicator, .buyingStrategyOperator, .buyingStrategyThreshold,
+            .sellingStrategyIndicator, .sellingStrategyOperator, .sellingStrategyThreshold{
+              display: flex;
+              flex-direction: row;
+              align-items: baseline;
+              height: 30px;
+
+              select {
+                width: 60px;
+                text-align-last: center;
+
+              }
+            }
+          }
+          .buyingStrategyAddButton, .sellingStrategyAddButton {
+            margin-top: 15px;
+          }
+        }
+        .startTabSellingStrategySelection {
         }
       }
     }
-    .timeSeriesTable {
+    .startTabTimeSeriesTable {
       margin-top: 20px;
+      margin-bottom: 10px;
     }
   }
 }

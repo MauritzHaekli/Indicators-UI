@@ -37,9 +37,8 @@ export interface timeSeriesTableData {
   low?: string,
   close?: string,
   volume?: string,
-  adx?: string,
-  rsi?: string,
-  ema?: string
+  [indicator: string]: string,
+  signal?: string
 }
 
 export interface timeSeriesData {
@@ -51,4 +50,10 @@ export interface timeSeriesData {
 export interface intervalType {
   intervalName: string,
   intervalValue: string,
+}
+
+export interface tradingSignal {
+  indicator: string,
+  operator: string,
+  threshold: string
 }

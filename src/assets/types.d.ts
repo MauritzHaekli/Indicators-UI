@@ -22,7 +22,8 @@ export interface timeSeriesStockData {
   high?: string,
   low?: string,
   close?: string,
-  volume?: string
+  volume?: string,
+  [indicator: string]: string
 }
 
 export interface timeSeriesIndicatorData {
@@ -39,6 +40,8 @@ export interface timeSeriesTableData {
   volume?: string,
   [indicator: string]: string,
   signal?: string
+  profit?: float,
+  profitPercentage?: float
 }
 
 export interface timeSeriesData {

@@ -98,7 +98,7 @@
             </th>
           </tr>
           <tbody>
-          <tr v-for="(value, key) in timeSeriesTableStockData" :key="key">
+          <tr v-for="(value, key) in timeSeriesTableTradingData" :key="key">
             <td v-for="cellData in value" :key="cellData">{{cellData}}</td>
           </tr>
           </tbody>

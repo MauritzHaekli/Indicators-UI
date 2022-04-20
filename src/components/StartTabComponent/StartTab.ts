@@ -38,32 +38,73 @@ import {
       return timeSeriesStockArray.map((timeSeriesStockDataItem: timeSeriesTableData, index: number) => Object.assign({}, timeSeriesStockDataItem, timeSeriesIndicatorArray[index]))
     },
 
+    isTradingEquationFulfilled (indicator: number, operator: string, threshold: number) {
+      switch (operator) {
+        case '>': return indicator > threshold
+        case '<': return indicator < threshold
+        case '>=': return indicator >= threshold
+        case '<=': return indicator <= threshold
+        case '=': return indicator === threshold
+      }
+    },
+
     getTimeSeriesTableColumns (timeSeriesTableData: timeSeriesTableData[]): string[] {
       return Object.keys(timeSeriesTableData[0])
     },
+    getTableTradingData (stockData: timeSeriesStockData[], buySignals: tradingSignal[], sellSignals: tradingSignal[]): timeSeriesTableData[] {
+      const tableData: timeSeriesTableData[] = stockData
+      const buySignalText = 'Buy'
+      const holdingSignalText = 'Hold'
+      const sellingSignalText = 'Sell'
+      const defaultSignalText = ''
+      tableData.forEach((tableDataEntry: timeSeriesTableData, tableDataIndex: number) => {
+        let confirmedBuySignals = 0
+        const confirmedSellSignals = 0
+        buySignals.forEach(buySignal => {
+          if (confirmedBuySignals !== buySignals.length &&
+            tableDataIndex >= 1 &&
+            tableData[tableDataIndex - 1].signal !== buySignalText &&
+            tableData[tableDataIndex - 1].signal !== holdingSignalText &&
+            this.isTradingEquationFulfilled(parseFloat(tableDataEntry[buySignal.indicator]), buySignal.operator, parseFloat(buySignal.threshold))) {
+            confirmedBuySignals = confirmedBuySignals + 1
+            if (confirmedBuySignals === buySignals.length) {
+              tableDataEntry.signal = buySignalText
+            }
+          }
+        })
+        sellSignals.forEach(sellSignal => {
+          if (confirmedSellSignals !== sellSignals.length &&
+            tableDataIndex >= 1 &&
+            (tableData[tableDataIndex - 1].signal === buySignalText || tableData[tableDataIndex - 1].signal === holdingSignalText) &&
+            tableData[tableDataIndex - 1].signal !== sellingSignalText &&
+            tableData[tableDataIndex - 1].signal !== defaultSignalText &&
+            !this.isTradingEquationFulfilled(parseFloat(tableDataEntry[sellSignal.indicator]), sellSignal.operator, parseFloat(sellSignal.threshold))
+          ) {
+            tableDataEntry.signal = holdingSignalText
+          }
+        })
+      })
+      console.log('Function', tableData)
+      return tableData
+    },
 
     async setTimeSeriesData (stock: string, indicators: string[], order: string, interval: string, outputsize: string, decimalSize: string) {
-      let stockData: timeSeriesTableData[] = [{}]
-      let indicatorData: timeSeriesTableData[] = [{}]
+      let stockData: timeSeriesStockData[] = [{}]
+      let indicatorData: timeSeriesStockData[] = [{}]
+      let tableTradingData: timeSeriesTableData[] = [{}]
       await this.getTimeSeriesStockData(stock, order, interval, outputsize, decimalSize).then(async (response: AxiosResponse) => {
         stockData = response.data.values
         for (const indicator of indicators) {
           await this.getTimeSeriesIndicatorData(stock, indicator, order, interval, outputsize, decimalSize).then((response: AxiosResponse) => {
             indicatorData = response.data.values
             stockData = this.mergeIndicatorDataToTimeSeries(stockData, indicatorData)
-            this.timeSeriesTableStockData = stockData
-            console.log(indicator)
           })
         }
       })
-      stockData.forEach(stockDataEntry => {
-        if (parseFloat(stockDataEntry.rsi) >= 70) {
-          stockDataEntry.signal = 'Buy'
-        } else {
-          stockDataEntry.signal = ''
-        }
-      })
-      this.timeSeriesTableColumns = this.getTimeSeriesTableColumns(stockData)
+      tableTradingData = this.getTableTradingData(stockData, this.buySignals, this.sellSignals)
+      console.log(tableTradingData)
+      this.timeSeriesTableTradingData = tableTradingData
+      this.timeSeriesTableColumns = this.getTimeSeriesTableColumns(tableTradingData)
     },
 
     addTradingSignal (addedStrategy: string) {
@@ -83,12 +124,12 @@ import {
   data () {
     return {
       startButtonText: 'Start Something' as string,
-      timeSeriesTableStockData: [{}] as timeSeriesStockData,
+      timeSeriesTableTradingData: [{}] as timeSeriesStockData[],
       timeSeriesTableIndicatorData: '' as string,
       availableIndicators: ['ema', 'rsi', 'adx'] as string[],
       availableOperators: ['>', '>=', '=', '<', '<='] as string[],
-      availableThresholds: ['15', '20', '25', '30'] as string[],
-      selectedStocks: 'BNTX' as string,
+      availableThresholds: ['15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75'] as string[],
+      selectedStocks: 'TSLA' as string,
       selectedIndicators: ['ema', 'rsi', 'adx'] as string[],
       selectedOrder: 'ASC' as string,
       selectedInterval: '1min' as string,
@@ -120,7 +161,7 @@ import {
         intervalValue: '15min'
       }
       ] as intervalType[],
-      dataSizes: ['3', '10', '50', '500', '5000'] as string[],
+      dataSizes: ['10', '50', '500', '5000'] as string[],
       buySignals: [{
         indicator: '',
         operator: '',

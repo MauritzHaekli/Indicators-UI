@@ -44,6 +44,16 @@ export interface timeSeriesTableData {
   profitPercentage?: float
 }
 
+export interface tradingStatistic {
+  totalTrades: number,
+  positiveTrades: number,
+  negativeTrades: number,
+  successRate: number,
+  totalProfitPercentage: number,
+  mean: number,
+  standardDeviation: number
+}
+
 export interface timeSeriesData {
   data: timeSeriesStockMetaData,
   values: timeSeriesStockData[],

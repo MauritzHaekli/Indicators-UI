@@ -33,7 +33,13 @@
             <div class="buyingStrategyHeader">
               <p>{{ buyingStrategyHeader }} </p>
             </div>
-            <div class="buyingStrategyParameterSelection" v-for="buySignal in buySignals" :key="buySignal">
+            <div class="buyStrategySelection">
+              <select>
+
+              </select>
+
+            </div>
+            <div class="buyingStrategyParameterSelection" v-for="(buySignal, buySignalIndex) in buySignals" :key="buySignal">
               <div class="buyingStrategyIndicator">
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="buySignal.indicator">
@@ -52,16 +58,21 @@
                   <option v-for="threshold in availableThresholds" :key="threshold">{{ threshold }}</option>
                 </select>
               </div>
+              <div class="buyingStrategyDeleteButton">
+                <button type="button" v-on:click="deleteTradingStrategy('BuyStrategy', buySignalIndex)">
+                  <i class='fas fa-hourglass-start'></i>
+                </button>
+              </div>
             </div>
-            <div class="buyingStrategyAddButton" v-on:click="this.addTradingSignal('BuyStrategy')">
-              <button type="button" >{{ buyingStrategyAddButtonText }}</button>
+            <div class="buyingStrategyAddButton">
+              <button type="button" v-on:click="this.addTradingStrategy('BuyStrategy')">{{ buyingStrategyAddButtonText }}</button>
             </div>
           </div>
           <div class="startTabSellingStrategySelection">
             <div class="sellingStrategyHeader">
               <p>{{ sellingStrategyHeader }} </p>
             </div>
-            <div class="sellingStrategyParameterSelection" v-for="sellSignal in sellSignals" :key="sellSignal">
+            <div class="sellingStrategyParameterSelection" v-for="(sellSignal, sellSignalIndex) in sellSignals" :key="sellSignal">
               <div class="sellingStrategyIndicator">
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="sellSignal.indicator">
@@ -80,29 +91,73 @@
                   <option v-for="threshold in availableThresholds" :key="threshold">{{ threshold }}</option>
                 </select>
               </div>
+              <div class="sellingStrategyDeleteButton">
+                <button type="button" v-on:click="deleteTradingStrategy('SellStrategy', sellSignalIndex)">
+                  <i class="fas fa-x"></i>
+                </button>
+              </div>
             </div>
-            <div class="sellingStrategyAddButton" v-on:click="this.addTradingSignal('SellStrategy')">
-              <button type="button" >{{ sellingStrategyAddButtonText }}</button>
+            <div class="sellingStrategyAddButton" >
+              <button type="button" v-on:click="this.addTradingStrategy('SellStrategy')">{{ sellingStrategyAddButtonText }}</button>
             </div>
           </div>
         </div>
-        <div class="startTabSelectionButton" v-on:click="this.setTimeSeriesData(selectedStocks, selectedIndicators, selectedOrder, selectedInterval, selectedDataSize, selectedDecimalSize)">
-          <button type="button" >{{ startButtonText }}</button>
+        <div class="startTabSelectionButton">
+          <button type="button" v-on:click="this.setTimeSeriesData(selectedStocks, selectedIndicators, selectedOrder, selectedInterval, selectedDataSize, selectedDecimalSize)">{{ startButtonText }}</button>
         </div>
       </div>
-      <div class="startTabTimeSeriesTable">
-        <table >
-          <tr>
-            <th v-for="timeSeriesTableColumn in timeSeriesTableColumns" :key="timeSeriesTableColumn">
-              {{timeSeriesTableColumn}}
-            </th>
-          </tr>
-          <tbody>
-          <tr v-for="(value, key) in timeSeriesTableTradingData" :key="key">
-            <td v-for="cellData in value" :key="cellData">{{cellData}}</td>
-          </tr>
-          </tbody>
-        </table>
+      <div class="startTabTradingData" v-if="showTradingData">
+        <div class="startTabTradingDataContent">
+          <div class="startTabTimeSeriesTable">
+            <table class="table table-sm">
+              <thead class="table-dark">
+                <tr>
+                  <th v-for="timeSeriesTableColumn in timeSeriesTableColumns" :key="timeSeriesTableColumn">
+                    {{timeSeriesTableColumn}}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr v-for="value in timeSeriesTableTradingData" :key="value">
+                <td v-for="(cellData, index) in value" :key="index" v-bind:class="{timeSeriesTableSignalCell: cellData === buySignalText || cellData === holdSignalText || cellData === sellSignalText}">
+                  {{cellData}}
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="startTabTradingStatistics">
+            <div class="tradingStatisticsTradeTable">
+              <table>
+                <tr class="tradeTableHeader">
+                  <td v-for="tradeHeader in tradingStatisticsTradeHeaders" :key="tradeHeader">
+                    {{tradeHeader}}
+                  </td>
+                </tr>
+                <tr>
+                  <td>{{tradingStatistic.totalTrades}}</td>
+                  <td>{{tradingStatistic.positiveTrades}}</td>
+                  <td>{{tradingStatistic.negativeTrades}}</td>
+                  <td>{{tradingStatistic.successRate}} %</td>
+                </tr>
+              </table>
+            </div>
+            <div class="tradingStatisticsPerformanceTable">
+              <table>
+                <tr class="performanceTableHeader">
+                  <td v-for="performanceHeader in tradingStatisticsPerformanceHeaders" :key="performanceHeader">
+                    {{performanceHeader}}
+                  </td>
+                </tr>
+                <tr>
+                  <td>{{tradingStatistic.totalProfitPercentage}}</td>
+                  <td>{{tradingStatistic.mean}}</td>
+                  <td>{{tradingStatistic.standardDeviation}}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

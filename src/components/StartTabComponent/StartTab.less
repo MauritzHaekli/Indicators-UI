@@ -19,7 +19,6 @@
     background: @content-background-color;
     display: flex;
     flex-direction: row;
-    align-items: baseline;
 
     .startTabSelection {
       display: flex;
@@ -65,12 +64,21 @@
             display: flex;
             flex-direction: row;
 
-            .buyingStrategyIndicator, .buyingStrategyOperator, .buyingStrategyThreshold,
-            .sellingStrategyIndicator, .sellingStrategyOperator, .sellingStrategyThreshold{
+            .buyingStrategyIndicator, .buyingStrategyOperator, .buyingStrategyThreshold, .buyingStrategyDeleteButton,
+            .sellingStrategyIndicator, .sellingStrategyOperator, .sellingStrategyThreshold, .sellingStrategyDeleteButton{
               display: flex;
               flex-direction: row;
-              align-items: baseline;
               height: 30px;
+
+              button {
+                margin: 0;
+                height: 25px;
+                width: 25px;
+                min-height: 0;
+                min-width: 0;
+                border: solid;
+                text-align: center;
+              }
 
               select {
                 width: 60px;
@@ -89,10 +97,50 @@
         }
       }
     }
-    .startTabTimeSeriesTable {
-      margin-top: 20px;
-      margin-left: 30px;
-      margin-bottom: 10px;
+    .startTabTradingData {
+
+      .startTabTradingDataContent {
+        margin-left: 80px;
+
+        .startTabTimeSeriesTable {
+          margin-top: 20px;
+          margin-bottom: 10px;
+          max-height: 500px;
+          min-width: 900px;
+          max-width: 100%;
+          overflow-y: auto;
+          white-space: nowrap;
+
+          .timeSeriesTableSignalCell {
+            background-color: @buy-signal-color;
+          }
+        }
+        .startTabTradingStatistics {
+          margin-top: 30px;
+
+          .tradingStatisticsTradeTable, .tradingStatisticsPerformanceTable {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            table {
+              border:  1px solid black;
+              border-collapse: collapse;
+            }
+
+            .tradeTableHeader, .performanceTableHeader {
+              background-color: #1E90FF;
+              color: white;
+              td {
+                width: 150px;
+              }
+            }
+          }
+          .tradingStatisticsPerformanceTable {
+            margin-top: 20px;
+          }
+        }
+      }
     }
   }
 }

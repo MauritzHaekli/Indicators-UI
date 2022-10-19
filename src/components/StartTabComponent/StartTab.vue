@@ -1,130 +1,317 @@
 <template>
   <div class="startTabTemplate">
     <div class="startTabContent">
-      <div class="startTabSelection">
-        <div class="startTabStockSelection">
-          <input placeholder="Select stocks" v-model="selectedStocks">
-        </div>
-        <div class="startTabParameterSelection">
-          <div class="startTabOrderSelection">
-            <select v-model="selectedOrder">
-              <option v-for="orderType in orderTypes" :key="orderType"> {{orderType}}</option>
-            </select>
+      <div class="startTabHeaderContent">
+        <div class="startTabSelection">
+          <div class="startTabStockSelection">
+            <input placeholder="Select stocks" v-model="selectedStocks">
           </div>
-          <div class="startTabIntervalSelection">
-            <select v-model="selectedInterval">
-              <option v-for="intervalType in intervalTypes" :key="intervalType" :value="intervalType.intervalValue">{{ intervalType.intervalName }}</option>
-            </select>
-          </div>
-          <div class="startTabDataSizeSelection">
-            <select v-model="selectedDataSize">
-              <option v-for="dataSize in dataSizes" :key="dataSize">{{ dataSize }}</option>
-            </select>
-          </div>
-          <div class="startTabDecimalSelection">
-            <select v-model="selectedDecimalSize">
-              <option v-for="decimalSize in decimalSizes" :key="decimalSize">{{ decimalSize }}</option>
-            </select>
-          </div>
-        </div>
-        <input placeholder="Select indicators" v-model="selectedIndicators">
-        <div class="startTabStrategySelection">
-          <div class="startTabBuyingStrategySelection">
-            <div class="buyingStrategyHeader">
-              <p>{{ buyingStrategyHeader }} </p>
-            </div>
-            <div class="buyStrategySelection">
-              <select>
-
+          <div class="startTabParameterSelection">
+            <div class="startTabOrderSelection">
+              <select v-model="selectedOrder">
+                <option v-for="orderType in orderTypes" :key="orderType"> {{orderType}}</option>
               </select>
-
             </div>
-            <div class="buyingStrategyParameterSelection" v-for="(buySignal, buySignalIndex) in buySignals" :key="buySignal">
-              <div class="buyingStrategyIndicator">
-                <p>{{ strategySelectionIndicatorText }} </p>
-                <select v-model="buySignal.indicator">
-                  <option v-for="indicator in availableIndicators" :key="indicator">{{ indicator }}</option>
-                </select>
-              </div>
-              <div class="buyingStrategyOperator">
-                <p>{{ strategySelectionOperatorText }} </p>
-                <select v-model="buySignal.operator">
-                  <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
-                </select>
-              </div>
-              <div class="buyingStrategyThreshold">
-                <p>{{ strategySelectionThresholdText }} </p>
-                <select v-model="buySignal.threshold">
-                  <option v-for="threshold in availableThresholds" :key="threshold">{{ threshold }}</option>
-                </select>
-              </div>
-              <div class="buyingStrategyDeleteButton">
-                <button type="button" v-on:click="deleteTradingStrategy('BuyStrategy', buySignalIndex)">
-                  <i class='fas fa-hourglass-start'></i>
-                </button>
-              </div>
+            <div class="startTabIntervalSelection">
+              <select v-model="selectedInterval">
+                <option v-for="intervalType in intervalTypes" :key="intervalType" :value="intervalType.intervalValue">{{ intervalType.intervalName }}</option>
+              </select>
             </div>
-            <div class="buyingStrategyAddButton">
-              <button type="button" v-on:click="this.addTradingStrategy('BuyStrategy')">{{ buyingStrategyAddButtonText }}</button>
+            <div class="startTabDataSizeSelection">
+              <select v-model="selectedDataSize">
+                <option v-for="dataSize in dataSizes" :key="dataSize">{{ dataSize }}</option>
+              </select>
+            </div>
+            <div class="startTabDecimalSelection">
+              <select v-model="selectedDecimalSize">
+                <option v-for="decimalSize in decimalSizes" :key="decimalSize">{{ decimalSize }}</option>
+              </select>
             </div>
           </div>
-          <div class="startTabSellingStrategySelection">
-            <div class="sellingStrategyHeader">
-              <p>{{ sellingStrategyHeader }} </p>
-            </div>
-            <div class="sellingStrategyParameterSelection" v-for="(sellSignal, sellSignalIndex) in sellSignals" :key="sellSignal">
-              <div class="sellingStrategyIndicator">
-                <p>{{ strategySelectionIndicatorText }} </p>
-                <select v-model="sellSignal.indicator">
-                  <option v-for="indicator in availableIndicators" :key="indicator">{{ indicator }}</option>
+          <input placeholder="Select indicators" v-model="selectedIndicators">
+          <div class="startTabStrategySelection">
+            <div class="startTabBuyingStrategySelection">
+              <div class="addingStrategySelection">
+                <p>{{ buyingStrategyAddStrategy }}</p>
+                <select v-model="buyingStrategySelection" @change="clearCurrentBuySignal()">
+                  <option value="" disabled selected hidden>{{buyingStrategySelectionLabel}}</option>
+                  <option v-for="availableStrategy in availableStrategies" :key="availableStrategy.selectionKey" :value="availableStrategy.selectionKey">
+                    {{availableStrategy.selectionText}}
+                  </option>
                 </select>
               </div>
-              <div class="sellingStrategyOperator">
+              <div v-if="buyingStrategySelection === 'ema'" class="buyingStrategySelection">
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.indicator">
+                  <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{ emaIndicator.emaIndicatorLabel }}</option>
+                </select>
                 <p>{{ strategySelectionOperatorText }} </p>
-                <select v-model="sellSignal.operator">
+                <select v-model="currentBuySignal.operator">
                   <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
                 </select>
-              </div>
-              <div class="sellingStrategyThreshold">
-                <p>{{ strategySelectionThresholdText }} </p>
-                <select v-model="sellSignal.threshold">
-                  <option v-for="threshold in availableThresholds" :key="threshold">{{ threshold }}</option>
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.threshold">
+                  <option v-for="stockIndicator in availableStockParameters" :key="stockIndicator.stockParameterKey" :value="stockIndicator.stockParameterKey">{{ stockIndicator.stockParameterLabel }}</option>
+                  <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{emaIndicator.emaIndicatorLabel}}</option>
                 </select>
+                <div class="strategyClearButton">
+                  <button type="button" v-on:click="clearCurrentBuySignal(); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-xmark" />
+                  </button>
+                </div>
+                <div class="strategyAddButton">
+                  <button type="button" v-on:click="addTradingSignal('BuyStrategy', currentBuySignal); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-plus" />
+                  </button>
+                </div>
               </div>
-              <div class="sellingStrategyDeleteButton">
-                <button type="button" v-on:click="deleteTradingStrategy('SellStrategy', sellSignalIndex)">
-                  <i class="fas fa-x"></i>
-                </button>
+              <div v-if="buyingStrategySelection === 'rsi'" class="buyingStrategySelection">
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.indicator">
+                  <option v-for="rsiIndicator in availableRsiIndicators" :key="rsiIndicator.rsiIndicatorKey" :value="rsiIndicator.rsiIndicatorKey">{{ rsiIndicator.rsiIndicatorLabel }}</option>
+                </select>
+                <p>{{ strategySelectionOperatorText }} </p>
+                <select v-model="currentBuySignal.operator">
+                  <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                </select>
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.threshold">
+                  <option v-for="rsiThreshold in availableRsiThresholds" :key="rsiThreshold" >{{ rsiThreshold }}</option>
+                </select>
+                <div class="strategyClearButton">
+                  <button type="button" v-on:click="clearCurrentBuySignal(); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-xmark" />
+                  </button>
+                </div>
+                <div class="strategyAddButton">
+                  <button type="button" v-on:click="addTradingSignal('BuyStrategy', currentBuySignal); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-plus" />
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="sellingStrategyAddButton" >
-              <button type="button" v-on:click="this.addTradingStrategy('SellStrategy')">{{ sellingStrategyAddButtonText }}</button>
+              <div v-if="buyingStrategySelection === 'adx'" class="buyingStrategySelection">
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.indicator">
+                  <option v-for="adxIndicator in availableAdxIndicators" :key="adxIndicator.adxIndicatorKey" :value="adxIndicator.adxIndicatorKey">{{ adxIndicator.adxIndicatorLabel }}</option>
+                </select>
+                <p>{{ strategySelectionOperatorText }} </p>
+                <select v-model="currentBuySignal.operator">
+                  <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                </select>
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.threshold">
+                  <option v-for="adxThreshold in availableAdxThresholds" :key="adxThreshold" >{{ adxThreshold }}</option>
+                </select>
+                <div class="strategyClearButton">
+                  <button type="button" v-on:click="clearCurrentBuySignal(); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-xmark" />
+                  </button>
+                </div>
+                <div class="strategyAddButton">
+                  <button type="button" v-on:click="addTradingSignal('BuyStrategy', currentBuySignal); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-plus" />
+                  </button>
+                </div>
+              </div>
+              <div v-if="buyingStrategySelection === 'bollinger'" class="buyingStrategySelection">
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.indicator">
+                  <option v-for="bollingerIndicator in availableBollingerIndicators" :key="bollingerIndicator.bollingerIndicatorKey" :value="bollingerIndicator.bollingerIndicatorKey">{{ bollingerIndicator.bollingerIndicatorLabel }}</option>
+                </select>
+                <p>{{ strategySelectionOperatorText }} </p>
+                <select v-model="currentBuySignal.operator">
+                  <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                </select>
+                <p>{{ strategySelectionIndicatorText }} </p>
+                <select v-model="currentBuySignal.threshold">
+                  <option v-for="bollingerThreshold in availableBollingerThresholds" :key="bollingerThreshold">{{ bollingerThreshold }}</option>
+                </select>
+                <div class="strategyClearButton">
+                  <button type="button" v-on:click="clearCurrentBuySignal(); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-xmark" />
+                  </button>
+                </div>
+                <div class="strategyAddButton">
+                  <button type="button" v-on:click="addTradingSignal('BuyStrategy', currentBuySignal); resetBuyingStrategySelection()">
+                    <font-awesome-icon icon="fa-solid fa-plus" />
+                  </button>
+                </div>
+              </div>
+              <div class="startTabSellingStrategySelection">
+                <div class="addingStrategySelection">
+                  <p>{{ sellingStrategyAddStrategy }}</p>
+                  <select v-model="sellingStrategySelection" @change="clearCurrentSellSignal()">
+                    <option value="" disabled selected hidden>{{sellingStrategySelectionLabel}}</option>
+                    <option v-for="availableStrategy in availableStrategies" :key="availableStrategy.selectionKey" :value="availableStrategy.selectionKey">
+                      {{availableStrategy.selectionText}}
+                    </option>
+                  </select>
+                </div>
+                <div v-if="sellingStrategySelection === 'ema'" class="sellingStrategySelection">
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.indicator">
+                    <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{ emaIndicator.emaIndicatorLabel }}</option>
+                  </select>
+                  <p>{{ strategySelectionOperatorText }} </p>
+                  <select v-model="currentSellSignal.operator">
+                    <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                  </select>
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.threshold">
+                    <option v-for="stockIndicator in availableStockParameters" :key="stockIndicator.stockParameterKey" :value="stockIndicator.stockParameterKey">{{ stockIndicator.stockParameterLabel }}</option>
+                    <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{emaIndicator.emaIndicatorLabel}}</option>
+                  </select>
+                  <div class="strategyClearButton">
+                    <button type="button" v-on:click="clearCurrentSellSignal(); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+                  <div class="strategyAddButton">
+                    <button type="button" v-on:click="addTradingSignal('SellStrategy', currentSellSignal); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-plus" />
+                    </button>
+                  </div>
+                </div>
+                <div v-if="sellingStrategySelection === 'rsi'" class="sellingStrategySelection">
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.indicator">
+                    <option v-for="rsiIndicator in availableRsiIndicators" :key="rsiIndicator.rsiIndicatorKey" :value="rsiIndicator.rsiIndicatorKey">{{ rsiIndicator.rsiIndicatorLabel }}</option>
+                  </select>
+                  <p>{{ strategySelectionOperatorText }} </p>
+                  <select v-model="currentSellSignal.operator">
+                    <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                  </select>
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.threshold">
+                    <option v-for="rsiThreshold in availableRsiThresholds" :key="rsiThreshold" >{{ rsiThreshold }}</option>
+                  </select>
+                  <div class="strategyClearButton">
+                    <button type="button" v-on:click="clearCurrentSellSignal(); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+                  <div class="strategyAddButton">
+                    <button type="button" v-on:click="addTradingSignal('SellStrategy', currentSellSignal); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-plus" />
+                    </button>
+                  </div>
+                </div>
+                <div v-if="sellingStrategySelection === 'adx'" class="sellingStrategySelection">
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.indicator">
+                    <option v-for="adxIndicator in availableAdxIndicators" :key="adxIndicator.adxIndicatorKey" :value="adxIndicator.adxIndicatorKey">{{ adxIndicator.adxIndicatorLabel }}</option>
+                  </select>
+                  <p>{{ strategySelectionOperatorText }} </p>
+                  <select v-model="currentSellSignal.operator">
+                    <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                  </select>
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.threshold">
+                    <option v-for="adxThreshold in availableAdxThresholds" :key="adxThreshold" >{{ adxThreshold }}</option>
+                  </select>
+                  <div class="strategyClearButton">
+                    <button type="button" v-on:click="clearCurrentSellSignal(); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+                  <div class="strategyAddButton">
+                    <button type="button" v-on:click="addTradingSignal('SellStrategy', currentSellSignal); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-plus" />
+                    </button>
+                  </div>
+                </div>
+                <div v-if="sellingStrategySelection === 'bollinger'" class="sellingStrategySelection">
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.indicator">
+                    <option v-for="bollingerIndicator in availableBollingerIndicators" :key="bollingerIndicator.bollingerIndicatorKey" :value="bollingerIndicator.bollingerIndicatorKey">{{ bollingerIndicator.bollingerIndicatorLabel }}</option>
+                  </select>
+                  <p>{{ strategySelectionOperatorText }} </p>
+                  <select v-model="currentSellSignal.operator">
+                    <option v-for="operator in availableOperators" :key="operator">{{ operator }}</option>
+                  </select>
+                  <p>{{ strategySelectionIndicatorText }} </p>
+                  <select v-model="currentSellSignal.threshold">
+                    <option v-for="bollingerThreshold in availableBollingerThresholds" :key="bollingerThreshold">{{ bollingerThreshold }}</option>
+                  </select>
+                  <div class="strategyClearButton">
+                    <button type="button" v-on:click="clearCurrentSellSignal(); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+                  <div class="strategyAddButton">
+                    <button type="button" v-on:click="addTradingSignal('SellStrategy', currentSellSignal); resetSellingStrategySelection()">
+                      <font-awesome-icon icon="fa-solid fa-plus" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="startTabBacktestButton">
+                <button type="button" v-on:click="this.setTimeSeriesData(selectedStocks, selectedIndicators, selectedOrder, selectedInterval, selectedDataSize, selectedDecimalSize)">{{ startButtonText }}</button>
+              </div>
             </div>
           </div>
         </div>
-        <div class="startTabSelectionButton">
-          <button type="button" v-on:click="this.setTimeSeriesData(selectedStocks, selectedIndicators, selectedOrder, selectedInterval, selectedDataSize, selectedDecimalSize)">{{ startButtonText }}</button>
-        </div>
-      </div>
-      <div class="startTabTradingData" v-if="showTradingData">
-        <div class="startTabTradingDataContent">
-          <div class="startTabTimeSeriesTable">
-            <table class="table table-sm">
-              <thead class="table-dark">
-                <tr>
-                  <th v-for="timeSeriesTableColumn in timeSeriesTableColumns" :key="timeSeriesTableColumn">
-                    {{timeSeriesTableColumn}}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-              <tr v-for="value in timeSeriesTableTradingData" :key="value">
-                <td v-for="(cellData, index) in value" :key="index" v-bind:class="{timeSeriesTableSignalCell: cellData === buySignalText || cellData === holdSignalText || cellData === sellSignalText}">
-                  {{cellData}}
-                </td>
-              </tr>
-              </tbody>
-            </table>
+        <div class="startTabTradingSignalsDisplay">
+          <div class="startTabTradingSignals">
+            <div class="selectedBuySignals">
+              <div class="selectedBuySignalsHeader">
+                <div class="buySignalsTableText">{{buySignalsTableText}}</div>
+                <font-awesome-icon icon="fa-regular fa-credit-card" />
+              </div>
+              <div class="buySignalsTable table-responsive table-scroll">
+                <table class="table table-striped mb-0">
+                  <thead class="buySignalsTableHeader">
+                    <tr>
+                      <th scope="col" v-for="buySignalTableHeader in buySignalTableHeaders" :key="buySignalTableHeader">
+                        {{buySignalTableHeader}}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(buySignal, buySignalIndex) in buySignals" :key="buySignal">
+                      <td>{{buySignal.indicator}}</td>
+                      <td>{{buySignal.operator}}</td>
+                      <td>{{buySignal.threshold}}</td>
+                      <td>
+                        <button type="button" v-on:click="clearSelectedBuySignal(buySignalIndex)">
+                          <font-awesome-icon icon="fa-solid fa-trash" />
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-if="buySignals.length === 0">
+                  <p>{{selectBuySignalWarning}}</p>
+                </div>
+              </div>
+            </div>
+            <div class="selectedSellSignals">
+              <div class="selectedSellSignalsHeader">
+                <div class="sellSignalsTableText">{{sellSignalsTableText}}</div>
+                <font-awesome-icon icon="fa-solid fa-hand-holding-dollar" />
+              </div>
+              <div class="sellSignalsTable table-responsive table-scroll">
+                <table class="table table-striped mb-0">
+                  <thead class="sellSignalsTableHeader">
+                    <tr>
+                      <th scope="col" v-for="sellSignalTableHeader in sellSignalTableHeaders" :key="sellSignalTableHeader">
+                        {{sellSignalTableHeader}}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="sellSignal in sellSignals" :key="sellSignal">
+                      <td>{{sellSignal.indicator}}</td>
+                      <td>{{sellSignal.operator}}</td>
+                      <td>{{sellSignal.threshold}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-if="sellSignals.length === 0">
+                  <p>{{selectSellSignalWarning}}</p>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="startTabTradingStatistics">
             <div class="tradingStatisticsTradeTable">
@@ -156,6 +343,28 @@
                 </tr>
               </table>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="startTabTradingData" v-if="showTradingData">
+        <div class="startTabTradingDataContent">
+          <div class="tradingDataTable table-responsive table-scroll">
+            <table class="table table-striped mb-0">
+              <thead>
+              <tr>
+                <th scope="col" v-for="timeSeriesTableColumn in timeSeriesTableColumns" :key="timeSeriesTableColumn">
+                  {{timeSeriesTableColumn}}
+                </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="value in timeSeriesTableTradingData" :key="value">
+                <td v-for="(cellData, index) in value" :key="index" v-bind:class="{timeSeriesTableSignalCell: cellData === buySignalText || cellData === holdSignalText || cellData === sellSignalText}">
+                  {{cellData}}
+                </td>
+              </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

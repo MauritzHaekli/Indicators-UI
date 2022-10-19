@@ -70,3 +70,26 @@ export interface tradingSignal {
   operator: string,
   threshold: string
 }
+
+export interface emaIndicator {
+  emaIndicatorLabel: string,
+  emaIndicatorKey: string
+}
+
+export interface rsiIndicator {
+  rsiIndicatorLabel: string,
+  rsiIndicatorKey: string
+}
+export interface adxIndicator {
+  adxIndicatorLabel: string,
+  adxIndicatorKey: string
+}
+export interface bollingerIndicator {
+  bollingerIndicatorLabel: string,
+  bollingerIndicatorKey: string
+}
+
+export interface stockParameters {
+  stockParameterLabel: string,
+  stockParameterKey: string
+}

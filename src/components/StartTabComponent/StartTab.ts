@@ -1,7 +1,12 @@
 import { Options, Vue } from 'vue-class-component'
 import axios, { AxiosResponse } from 'axios'
 import {
+  adxIndicator,
+  bollingerIndicator,
+  emaIndicator,
   intervalType,
+  rsiIndicator,
+  stockParameters,
   timeSeriesIndicatorData,
   timeSeriesStockData,
   timeSeriesTableData,
@@ -73,6 +78,22 @@ import {
       return (parseFloat(closingPrice) - parseFloat(openingPrice)) / parseFloat(openingPrice) * 100
     },
 
+    getCurrentSignalTableDataEntry (tableDataKey: string, tableData: timeSeriesTableData[], tableDataIndex: number) {
+      switch (tableDataKey) {
+        case 'lastEma': return parseFloat(tableData[tableDataIndex - 1].ema as string)
+        case 'currentEma': return parseFloat(tableData[tableDataIndex].ema as string)
+        case 'openingStockPrice': return parseFloat(tableData[tableDataIndex].open as string)
+        case 'closingStockPrice': return parseFloat(tableData[tableDataIndex].close as string)
+        case 'lastRsi': return parseFloat(tableData[tableDataIndex - 1].rsi as string)
+        case 'currentRsi': return parseFloat(tableData[tableDataIndex].rsi as string)
+        case 'lastAdx': return parseFloat(tableData[tableDataIndex - 1].adx as string)
+        case 'currentAdx': return parseFloat(tableData[tableDataIndex].adx as string)
+        case 'lastBollinger': return parseFloat(tableData[tableDataIndex - 1].percent_b as string)
+        case 'currentBollinger': return parseFloat(tableData[tableDataIndex].percent_b as string)
+        default: return tableDataKey
+      }
+    },
+
     getTableTradingData (stockData: timeSeriesStockData[], buySignals: tradingSignal[], sellSignals: tradingSignal[]): timeSeriesTableData[] {
       const tableData: timeSeriesTableData[] = this.mergeTradingStatisticsToStockData(stockData)
       let tradeOpeningPrice = 0
@@ -84,7 +105,10 @@ import {
         const tableDataIndexSufficient: boolean = tableDataIndex > 0
         if (tableDataIndexSufficient) {
           buySignals.forEach(buySignal => {
-            const buySignalFulfilled: boolean = this.isTradingEquationFulfilled(tableDataEntry[buySignal.indicator], buySignal.operator, buySignal.threshold)
+            const currentBuySignalIndicator: string = this.getCurrentSignalTableDataEntry(buySignal.indicator, tableData, tableDataIndex)
+            const currentBuySignalThreshold: string = this.getCurrentSignalTableDataEntry(buySignal.threshold, tableData, tableDataIndex)
+            console.log(currentBuySignalIndicator, buySignal.operator, currentBuySignalThreshold)
+            const buySignalFulfilled: boolean = this.isTradingEquationFulfilled(currentBuySignalIndicator, buySignal.operator, currentBuySignalThreshold)
             const currentlyNotInTrade: boolean = tableData[tableDataIndex - 1].signal === this.waitSignalText
             if (currentlyNotInTrade && buySignalFulfilled) {
               buySignalsFulfilledCounter += 1
@@ -98,8 +122,9 @@ import {
           })
           sellSignals.forEach(sellSignal => {
             const currentlyInTrade: boolean = tableData[tableDataIndex - 1].signal === this.buySignalText || tableData[tableDataIndex - 1].signal === this.holdSignalText
-            const sellSignalFulfilled: boolean = this.isTradingEquationFulfilled(tableDataEntry[sellSignal.indicator], sellSignal.operator, sellSignal.threshold)
-
+            const currentSellSignalIndicator: number = this.getCurrentSignalTableDataEntry(sellSignal.indicator, tableData, tableDataIndex)
+            const currentSellSignalThreshold: number = this.getCurrentSignalTableDataEntry(sellSignal.threshold, tableData, tableDataIndex)
+            const sellSignalFulfilled: boolean = this.isTradingEquationFulfilled(currentSellSignalIndicator, sellSignal.operator, currentSellSignalThreshold)
             if (currentlyInTrade && sellSignalFulfilled) {
               sellSignalsFulfilledCounter += 1
               if (sellSignalsFulfilledCounter === sellSignals.length) {
@@ -123,6 +148,7 @@ import {
       })
       return tableData
     },
+
     calculateSumOfArray (array: number[]): number {
       let sumOfArray = 0
       array.forEach(profit => {
@@ -197,27 +223,41 @@ import {
       this.showTradingData = true
     },
 
-    addTradingStrategy (addedTradingStrategy: string) {
-      const emptyTradingSignal: tradingSignal = {
+    addTradingSignal (addedTradingStrategy: string, tradingSignal: tradingSignal) {
+      if (addedTradingStrategy === 'BuyStrategy') {
+        this.buySignals.push(tradingSignal)
+        this.clearCurrentBuySignal()
+      }
+      if (addedTradingStrategy === 'SellStrategy') {
+        this.sellSignals.push(tradingSignal)
+        this.clearCurrentSellSignal()
+      }
+    },
+
+    clearCurrentBuySignal () {
+      this.currentBuySignal = {
         indicator: '',
         operator: '',
         threshold: ''
       }
-      if (addedTradingStrategy === 'BuyStrategy') {
-        this.buySignals.push(emptyTradingSignal)
-      }
-      if (addedTradingStrategy === 'SellStrategy') {
-        this.sellSignals.push(emptyTradingSignal)
+    },
+    clearCurrentSellSignal () {
+      this.currentSellSignal = {
+        indicator: '',
+        operator: '',
+        threshold: ''
       }
     },
 
-    deleteTradingStrategy (deletedTradingStrategy: string, deletedTradingStrategyIndex: number) {
-      if (deletedTradingStrategy === 'BuyStrategy') {
-        this.buySignals.splice(deletedTradingStrategyIndex, 1)
-      }
-      if (deletedTradingStrategy === 'SellStrategy') {
-        this.sellSignals.splice(deletedTradingStrategyIndex, 1)
-      }
+    clearSelectedBuySignal (index: number) {
+      this.buySignals.splice(index, 1)
+    },
+
+    resetBuyingStrategySelection () {
+      this.buyingStrategySelection = ''
+    },
+    resetSellingStrategySelection () {
+      this.sellingStrategySelection = ''
     }
   },
   data () {
@@ -225,11 +265,60 @@ import {
       startButtonText: 'Start Backtest' as string,
       timeSeriesTableTradingData: [{}] as timeSeriesTableData[],
       timeSeriesTableIndicatorData: '' as string,
-      availableIndicators: ['ema', 'rsi', 'adx', 'percent_b'] as string[],
+      availableEmaIndicators: [{
+        emaIndicatorLabel: 'last EMA',
+        emaIndicatorKey: 'lastEma'
+      }, {
+        emaIndicatorLabel: 'current EMA',
+        emaIndicatorKey: 'currentEma'
+      }] as emaIndicator[],
+      availableRsiIndicators: [{
+        rsiIndicatorLabel: 'last RSI',
+        rsiIndicatorKey: 'lastRsi'
+      }, {
+        rsiIndicatorLabel: 'current RSI',
+        rsiIndicatorKey: 'currentRsi'
+      }] as rsiIndicator[],
+      availableAdxIndicators: [{
+        adxIndicatorLabel: 'last ADX',
+        adxIndicatorKey: 'lastAdx'
+      }, {
+        adxIndicatorLabel: 'current ADX',
+        adxIndicatorKey: 'currentAdx'
+      }] as adxIndicator[],
+      availableBollingerIndicators: [{
+        bollingerIndicatorLabel: 'last Bollinger',
+        bollingerIndicatorKey: 'lastBollinger'
+      }, {
+        bollingerIndicatorLabel: 'current Bollinger',
+        bollingerIndicatorKey: 'currentBollinger'
+      }] as bollingerIndicator[],
+      availableStockParameters: [{
+        stockParameterLabel: 'stock price(open)',
+        stockParameterKey: 'openingStockPrice'
+      }, {
+        stockParameterLabel: 'stock price(close)',
+        stockParameterKey: 'closingStockPrice'
+      }] as stockParameters[],
       availableOperators: ['>', '>=', '=', '<', '<='] as string[],
-      availableThresholds: ['0', '1', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75'] as string[],
-      availableStrategies: ['EMA-Strategy', 'RSI-Strategy', 'ADX-Strategy', 'Bollinger-Strategy'],
-      selectedStocks: 'BNTX' as string,
+      availableRsiThresholds: ['10', '20', '30', '40', '50', '60', '70', '80'],
+      availableAdxThresholds: ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70'],
+      availableBollingerThresholds: ['-1.5', '-1', '-0.5', '0', '0.25', '0.5', '0.75', '1', '1.25', '1.5'],
+      availableThresholds: ['0', '0.5', '1', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75'] as string[],
+      availableStrategies: [{
+        selectionText: 'EMA-Strategy',
+        selectionKey: 'ema'
+      }, {
+        selectionText: 'RSI-Strategy',
+        selectionKey: 'rsi'
+      }, {
+        selectionText: 'ADX-Strategy',
+        selectionKey: 'adx'
+      }, {
+        selectionText: 'Bollinger-Strategy',
+        selectionKey: 'bollinger'
+      }],
+      selectedStocks: 'TSLA' as string,
       selectedIndicators: ['ema', 'rsi', 'adx', 'percent_b'] as string[],
       selectedOrder: 'ASC' as string,
       selectedInterval: '1min' as string,
@@ -244,10 +333,12 @@ import {
       strategySelectionIndicatorText: 'Indicator: ' as string,
       strategySelectionOperatorText: 'Operator: ' as string,
       strategySelectionThresholdText: 'Threshold: ' as string,
-      buyingStrategyHeader: 'Buy-Strategy' as string,
-      sellingStrategyHeader: 'Sell-Strategy' as string,
-      buyingStrategyAddButtonText: 'Add Buy-Strategy' as string,
-      sellingStrategyAddButtonText: 'Add Sell-Strategy' as string,
+      buyingStrategyAddStrategy: 'Add a Buy-Strategy: ' as string,
+      buyingStrategySelectionLabel: '-- Select a strategy --' as string,
+      buyingStrategySelection: '' as string,
+      sellingStrategyAddStrategy: 'Add a Sell-Strategy: ' as string,
+      sellingStrategySelectionLabel: '-- Select a strategy --' as string,
+      sellingStrategySelection: '' as string,
       showTradingData: false,
       buySignalText: 'Buy',
       holdSignalText: 'Hold',
@@ -267,16 +358,24 @@ import {
       }
       ] as intervalType[],
       dataSizes: ['10', '50', '100', '500', '5000'] as string[],
-      buySignals: [{
-        indicator: 'adx',
-        operator: '>',
-        threshold: '25'
-      }] as tradingSignal[],
-      sellSignals: [{
-        indicator: 'adx',
-        operator: '<',
-        threshold: '20'
-      }] as tradingSignal[],
+      currentBuySignal: {
+        indicator: '',
+        operator: '',
+        threshold: ''
+      } as tradingSignal,
+      currentSellSignal: {
+        indicator: '',
+        operator: '',
+        threshold: ''
+      } as tradingSignal,
+      buySignals: [] as tradingSignal[],
+      buySignalsTableText: 'Selected Buy-Signals' as string,
+      buySignalTableHeaders: ['Indicator', 'Operator', 'Threshold', ''] as string[],
+      selectBuySignalWarning: 'Please select at least one Buy-Signal' as string,
+      sellSignals: [] as tradingSignal[],
+      sellSignalsTableText: 'Selected Sell-Signals' as string,
+      sellSignalTableHeaders: ['Indicator', 'Operator', 'Threshold', ''] as string[],
+      selectSellSignalWarning: 'Please select at least one Sell-Signal' as string,
       timeSeriesTableColumns: [] as string[],
       tradingStatistic: {
         totalTrades: 0,
@@ -289,12 +388,6 @@ import {
       },
       tradingStatisticsTradeHeaders: ['Getätigte Trades', 'positive Trades', 'negative Trades', 'Erfolgsquote'],
       tradingStatisticsPerformanceHeaders: ['Gesamtgewinn (%)', 'Erwartungswert', 'Standardabweichung'],
-      totalTradesText: 'Getätigte Trades: ',
-      positiveTradesText: 'positive Trades: ',
-      negativeTradesText: 'negative Trades: ',
-      successRateText: 'Erfolgsquote: ',
-      meanText: 'Erwartungswert: ',
-      standardDeviationText: 'Standardabweichung',
       apiToken: '82535d7d9eb84b5d905463e011aaaee8' as string
     }
   }

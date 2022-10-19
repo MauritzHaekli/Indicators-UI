@@ -8,7 +8,7 @@
              v-on:mouseover="this.setHover(sideBarTab)"
              v-on:mouseleave="this.setHover(sideBarTab)">
           <div class="sideBarTabContent">
-            <i v-bind:class="sideBarTab.iconName"></i>
+            <font-awesome-icon :icon="sideBarTab.iconName"></font-awesome-icon>
             <div class="sideBarTabLabel">{{ sideBarTab.label }}</div>
           </div>
         </div>

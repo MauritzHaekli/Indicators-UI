@@ -17,11 +17,11 @@ import StrategyTab from './components/StrategyTabComponent/StrategyTab.vue'
   data () {
     return {
       sideBarTabs: [
-        { name: 'startTab', label: 'Start', showTab: true, hovered: false, iconName: 'fas fa-hourglass-start' },
-        { name: 'statisticsTab', label: 'Statistics', showTab: false, hovered: false, iconName: 'fas fa-percent' },
-        { name: 'strategyTab', label: 'Strategy', showTab: false, hovered: false, iconName: 'fas fa-chess-queen' },
-        { name: 'configTab', label: 'Config', showTab: false, hovered: false, iconName: 'fas fa-robot' },
-        { name: 'settingsTab', label: 'Settings', showTab: false, hovered: false, iconName: 'fas fa-cogs' }
+        { name: 'startTab', label: 'Start', showTab: true, hovered: false, iconName: 'fa-solid fa-hourglass-start' },
+        { name: 'statisticsTab', label: 'Statistics', showTab: false, hovered: false, iconName: 'fa-solid fa-percent' },
+        { name: 'strategyTab', label: 'Strategy', showTab: false, hovered: false, iconName: 'fa-solid fa-chess-queen' },
+        { name: 'configTab', label: 'Config', showTab: false, hovered: false, iconName: 'fa-solid fa-robot' },
+        { name: 'settingsTab', label: 'Settings', showTab: false, hovered: false, iconName: 'fa-solid fa-cogs' }
       ]
     }
   },

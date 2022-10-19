@@ -18,91 +18,175 @@
     box-sizing: border-box;
     background: @content-background-color;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 
-    .startTabSelection {
+    .startTabHeaderContent {
       display: flex;
-      margin-top: 30px;
-      flex-direction: column;
-      align-items: center;
-      margin-left: 20px;
+      flex-direction: row;
+      margin-top: 50px;
 
-      input {
-        width: 350px;
-        margin-top: 20px;
-      }
-      button {
-        min-width: 200px;
-        min-height: 50px;
-        font-size: large;
-        margin-top: 20px;
-      }
-      .startTabParameterSelection {
-        display: flex;
-
-        select {
-          max-width: 120px;
-          min-width: 60px;
-          min-height: 22px;
-          margin-top: 10px;
-          border: thin solid ;
-          border-radius: 6px;
-          background-color: white;
-          font: inherit;
-          font-size: 13px;
-          text-align-last: center;
-        }
-      }
-      .startTabStrategySelection {
+      .startTabSelection {
         display: flex;
         flex-direction: column;
-        margin-top: 20px;
+        align-items: center;
+        margin-left: 20px;
 
-        .startTabBuyingStrategySelection, .startTabSellingStrategySelection {
+        .startTabStockSelection {
 
-          .buyingStrategyParameterSelection, .sellingStrategyParameterSelection {
+          input {
+            width: 350px;
+          }
+        }
+
+        .startTabParameterSelection {
+          display: flex;
+
+          select {
+            max-width: 120px;
+            min-width: 60px;
+            min-height: 22px;
+            margin-top: 10px;
+            border: thin solid;
+            border-radius: 6px;
+            background-color: white;
+            font: inherit;
+            font-size: 13px;
+            text-align-last: center;
+          }
+        }
+
+        .startTabStrategySelection {
+          display: flex;
+          flex-direction: column;
+          margin-top: 0;
+
+          .startTabBuyingStrategySelection, .startTabSellingStrategySelection {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
+            margin-top: 10px;
 
-            .buyingStrategyIndicator, .buyingStrategyOperator, .buyingStrategyThreshold, .buyingStrategyDeleteButton,
-            .sellingStrategyIndicator, .sellingStrategyOperator, .sellingStrategyThreshold, .sellingStrategyDeleteButton{
+            .buyingStrategySelection, .sellingStrategySelection {
               display: flex;
               flex-direction: row;
-              height: 30px;
+              align-items: flex-start;
 
-              button {
-                margin: 0;
-                height: 25px;
-                width: 25px;
-                min-height: 0;
-                min-width: 0;
-                border: solid;
-                text-align: center;
+              p {
+                margin-left: 15px;
               }
 
               select {
-                width: 60px;
-                text-align-last: center;
-                margin-left: 8px;
-                margin-right: 10px;
+                height: 30px;
+              }
 
+              .strategyAddButton, .strategyClearButton {
+                display: flex;
+                align-content: center;
+                justify-content: center;
+
+
+                button {
+                  max-width: 30px;
+                  max-height: 30px;
+                  margin-left: 15px;
+                }
               }
             }
           }
-          .buyingStrategyAddButton, .sellingStrategyAddButton {
-            margin-top: 15px;
+        }
+      }
+
+      .startTabTradingSignalsDisplay {
+        margin-left: 50px;
+
+        .table-scroll {
+          border-radius: .5rem;
+        }
+
+        .startTabTradingSignals {
+          display: flex;
+          flex-direction: row;
+
+          .selectedBuySignalsHeader, .selectedSellSignalsHeader {
+            display: flex;
+            flex-direction: row;
+
+            svg {
+              margin-left: 6px;
+              margin-top: 4px;
+            }
+          }
+
+          table td,
+          table th {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+          }
+
+          thead th {
+            color: #fff;
+          }
+
+          thead {
+            background-color: @table-header-color;
+          }
+
+          .table-scroll table thead th {
+            font-size: 1.25rem;
+          }
+
+          thead {
+            top: 0;
+            position: sticky;
+          }
+
+          .selectedSellSignals {
+            margin-left: 30px;
           }
         }
-        .startTabSellingStrategySelection {
+
+        .startTabTradingStatistics {
+          margin-top: 40px;
+
+          .tradingStatisticsTradeTable, .tradingStatisticsPerformanceTable {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            table {
+              border: 1px solid black;
+              border-collapse: collapse;
+            }
+
+            .tradeTableHeader, .performanceTableHeader {
+              background-color: #1E90FF;
+              color: white;
+
+              td {
+                width: 150px;
+              }
+            }
+          }
+
+          .tradingStatisticsPerformanceTable {
+            margin-top: 20px;
+          }
         }
+
       }
     }
     .startTabTradingData {
+      margin-right: 20px;
+      margin-left: 20px;
+
 
       .startTabTradingDataContent {
-        margin-left: 80px;
 
-        .startTabTimeSeriesTable {
+        .table-scroll {
+          border-radius: .5rem;
+        }
+
+        .tradingDataTable {
           margin-top: 20px;
           margin-bottom: 10px;
           max-height: 500px;
@@ -111,36 +195,36 @@
           overflow-y: auto;
           white-space: nowrap;
 
+
+
           .timeSeriesTableSignalCell {
             background-color: @buy-signal-color;
           }
-        }
-        .startTabTradingStatistics {
-          margin-top: 30px;
-
-          .tradingStatisticsTradeTable, .tradingStatisticsPerformanceTable {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            table {
-              border:  1px solid black;
-              border-collapse: collapse;
-            }
-
-            .tradeTableHeader, .performanceTableHeader {
-              background-color: #1E90FF;
-              color: white;
-              td {
-                width: 150px;
-              }
-            }
+          table td,
+          table th {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
           }
-          .tradingStatisticsPerformanceTable {
-            margin-top: 20px;
+
+          thead th {
+            color: #fff;
+          }
+
+          thead {
+            background-color: @table-header-color;
+          }
+
+          .table-scroll table thead th {
+            font-size: 1.25rem;
+          }
+          thead {
+            top: 0;
+            position: sticky;
           }
         }
       }
     }
   }
 }
+

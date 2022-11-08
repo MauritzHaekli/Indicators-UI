@@ -40,8 +40,8 @@ export interface timeSeriesTableData {
   volume?: string,
   [indicator: string]: string,
   signal?: string
-  profit?: float,
-  profitPercentage?: float
+  profit?: number,
+  profitPercentage?: number
 }
 
 export interface tradingStatistic {
@@ -69,27 +69,4 @@ export interface tradingSignal {
   indicator: string,
   operator: string,
   threshold: string
-}
-
-export interface emaIndicator {
-  emaIndicatorLabel: string,
-  emaIndicatorKey: string
-}
-
-export interface rsiIndicator {
-  rsiIndicatorLabel: string,
-  rsiIndicatorKey: string
-}
-export interface adxIndicator {
-  adxIndicatorLabel: string,
-  adxIndicatorKey: string
-}
-export interface bollingerIndicator {
-  bollingerIndicatorLabel: string,
-  bollingerIndicatorKey: string
-}
-
-export interface stockParameters {
-  stockParameterLabel: string,
-  stockParameterKey: string
 }

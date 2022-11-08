@@ -1,18 +1,22 @@
 import { Options, Vue } from 'vue-class-component'
 import axios, { AxiosResponse } from 'axios'
 import {
-  adxIndicator,
-  bollingerIndicator,
-  emaIndicator,
   intervalType,
-  rsiIndicator,
-  stockParameters,
   timeSeriesIndicatorData,
   timeSeriesStockData,
   timeSeriesTableData,
   tradingSignal,
   tradingStatistic
 } from '@/assets/types'
+
+import {
+  calculateSuccessRate,
+  calculateTradeProfitAbsolute,
+  calculateTradeProfitRelative,
+  calculateSumOfArray,
+  calculateMeanOfArray,
+  calculateStandardDeviationOfArray
+} from '@/assets/services/StatisticsService'
 
 @Options({
   props: {
@@ -70,26 +74,18 @@ import {
       return Object.keys(timeSeriesTableData[0])
     },
 
-    calculateTradeProfitAbsolute (openingPrice: string, closingPrice: string): number {
-      return parseFloat(closingPrice) - parseFloat(openingPrice)
-    },
-
-    calculateTradeProfitRelative (openingPrice: string, closingPrice: string): number {
-      return (parseFloat(closingPrice) - parseFloat(openingPrice)) / parseFloat(openingPrice) * 100
-    },
-
     getCurrentSignalTableDataEntry (tableDataKey: string, tableData: timeSeriesTableData[], tableDataIndex: number) {
       switch (tableDataKey) {
-        case 'lastEma': return parseFloat(tableData[tableDataIndex - 1].ema as string)
-        case 'currentEma': return parseFloat(tableData[tableDataIndex].ema as string)
-        case 'openingStockPrice': return parseFloat(tableData[tableDataIndex].open as string)
-        case 'closingStockPrice': return parseFloat(tableData[tableDataIndex].close as string)
-        case 'lastRsi': return parseFloat(tableData[tableDataIndex - 1].rsi as string)
-        case 'currentRsi': return parseFloat(tableData[tableDataIndex].rsi as string)
-        case 'lastAdx': return parseFloat(tableData[tableDataIndex - 1].adx as string)
-        case 'currentAdx': return parseFloat(tableData[tableDataIndex].adx as string)
-        case 'lastBollinger': return parseFloat(tableData[tableDataIndex - 1].percent_b as string)
-        case 'currentBollinger': return parseFloat(tableData[tableDataIndex].percent_b as string)
+        case 'last EMA': return parseFloat(tableData[tableDataIndex - 1].ema as string)
+        case 'current EMA': return parseFloat(tableData[tableDataIndex].ema as string)
+        case 'stock price(open)': return parseFloat(tableData[tableDataIndex].open as string)
+        case 'stock price(close)': return parseFloat(tableData[tableDataIndex].close as string)
+        case 'last RSI': return parseFloat(tableData[tableDataIndex - 1].rsi as string)
+        case 'current RSI': return parseFloat(tableData[tableDataIndex].rsi as string)
+        case 'last ADX': return parseFloat(tableData[tableDataIndex - 1].adx as string)
+        case 'current ADX': return parseFloat(tableData[tableDataIndex].adx as string)
+        case 'last Bollinger': return parseFloat(tableData[tableDataIndex - 1].percent_b as string)
+        case 'current Bollinger': return parseFloat(tableData[tableDataIndex].percent_b as string)
         default: return tableDataKey
       }
     },
@@ -101,22 +97,22 @@ import {
       tableData.forEach((tableDataEntry, tableDataIndex) => {
         let buySignalsFulfilledCounter = 0
         let sellSignalsFulfilledCounter = 0
-
+        const currentClosingPrice: number = parseFloat(tableDataEntry.close as string)
         const tableDataIndexSufficient: boolean = tableDataIndex > 0
         if (tableDataIndexSufficient) {
           buySignals.forEach(buySignal => {
             const currentBuySignalIndicator: string = this.getCurrentSignalTableDataEntry(buySignal.indicator, tableData, tableDataIndex)
             const currentBuySignalThreshold: string = this.getCurrentSignalTableDataEntry(buySignal.threshold, tableData, tableDataIndex)
-            console.log(currentBuySignalIndicator, buySignal.operator, currentBuySignalThreshold)
             const buySignalFulfilled: boolean = this.isTradingEquationFulfilled(currentBuySignalIndicator, buySignal.operator, currentBuySignalThreshold)
             const currentlyNotInTrade: boolean = tableData[tableDataIndex - 1].signal === this.waitSignalText
             if (currentlyNotInTrade && buySignalFulfilled) {
               buySignalsFulfilledCounter += 1
               if (buySignalsFulfilledCounter === buySignals.length) {
                 tradeOpeningPrice = parseFloat(tableDataEntry.open as string)
+                const startingClosingPrice: number = parseFloat(tableDataEntry.close as string)
                 tableDataEntry.signal = this.buySignalText
-                tableDataEntry.profit = this.calculateTradeProfitAbsolute(tableDataEntry.open, tableDataEntry.close).toFixed(2)
-                tableDataEntry.profitPercentage = this.calculateTradeProfitRelative(tableDataEntry.open, tableDataEntry.close).toFixed(4)
+                tableDataEntry.profit = calculateTradeProfitAbsolute(tradeOpeningPrice, startingClosingPrice)
+                tableDataEntry.profitPercentage = calculateTradeProfitRelative(tradeOpeningPrice, startingClosingPrice)
               }
             }
           })
@@ -129,50 +125,24 @@ import {
               sellSignalsFulfilledCounter += 1
               if (sellSignalsFulfilledCounter === sellSignals.length) {
                 tableDataEntry.signal = this.sellSignalText
-                tableDataEntry.profit = this.calculateTradeProfitAbsolute(tradeOpeningPrice, tableDataEntry.close).toFixed(2)
-                tableDataEntry.profitPercentage = this.calculateTradeProfitRelative(tradeOpeningPrice, tableDataEntry.close).toFixed(4)
+                tableDataEntry.profit = calculateTradeProfitAbsolute(tradeOpeningPrice, currentClosingPrice)
+                tableDataEntry.profitPercentage = calculateTradeProfitRelative(tradeOpeningPrice, currentClosingPrice)
                 tradeOpeningPrice = 0
                 sellSignalsFulfilledCounter = 0
               } else {
                 tableDataEntry.signal = this.holdSignalText
-                tableDataEntry.profit = this.calculateTradeProfitAbsolute(tradeOpeningPrice, tableDataEntry.close).toFixed(2)
-                tableDataEntry.profitPercentage = this.calculateTradeProfitRelative(tradeOpeningPrice, tableDataEntry.close).toFixed(4)
+                tableDataEntry.profit = calculateTradeProfitAbsolute(tradeOpeningPrice, currentClosingPrice)
+                tableDataEntry.profitPercentage = calculateTradeProfitRelative(tradeOpeningPrice, currentClosingPrice)
               }
             } else if (currentlyInTrade && !sellSignalFulfilled) {
               tableDataEntry.signal = this.holdSignalText
-              tableDataEntry.profit = this.calculateTradeProfitAbsolute(tradeOpeningPrice, tableDataEntry.close).toFixed(2)
-              tableDataEntry.profitPercentage = this.calculateTradeProfitRelative(tradeOpeningPrice, tableDataEntry.close).toFixed(4)
+              tableDataEntry.profit = calculateTradeProfitAbsolute(tradeOpeningPrice, currentClosingPrice)
+              tableDataEntry.profitPercentage = calculateTradeProfitRelative(tradeOpeningPrice, currentClosingPrice)
             }
           })
         }
       })
       return tableData
-    },
-
-    calculateSumOfArray (array: number[]): number {
-      let sumOfArray = 0
-      array.forEach(profit => {
-        sumOfArray += profit
-      })
-      return sumOfArray
-    },
-
-    calculateMeanOfArray (array: number[]): number {
-      let meanOfArray = 0
-      array.forEach(profit => {
-        meanOfArray += profit
-      })
-      meanOfArray = meanOfArray / array.length
-      return meanOfArray
-    },
-
-    calculateStandardDeviationOfArray (array: number[]): number {
-      const mean = this.calculateMeanOfArray(array)
-      array = array.map(arrayEntry => {
-        return (arrayEntry - mean) ** 2
-      })
-      const variance = this.calculateMeanOfArray(array)
-      return Math.sqrt(variance)
     },
 
     getTradingStatistics (tableData: timeSeriesTableData[], tradingStatistic: tradingStatistic): tradingStatistic {
@@ -183,23 +153,21 @@ import {
 
       tableData.forEach(tableDataEntry => {
         const tradeFinished: boolean = tableDataEntry.signal === this.sellSignalText
-        const tradeSuccessful: boolean = tableDataEntry.profitPercentage > 0
+        const tradeSuccessful: boolean = tableDataEntry.profitPercentage as number > 0
 
         if (tradeFinished) {
           totalTradeCounter += 1
-          profits.push(parseFloat(tableDataEntry.profitPercentage))
+          profits.push(tableDataEntry.profitPercentage as number)
           tradeSuccessful ? positiveTradeCounter += 1 : negativeTradeCounter += 1
         }
       })
       tradingStatistic.totalTrades = totalTradeCounter
       tradingStatistic.positiveTrades = positiveTradeCounter
       tradingStatistic.negativeTrades = negativeTradeCounter
-      if (tradingStatistic.totalTrades > 0) {
-        tradingStatistic.successRate = parseFloat(((positiveTradeCounter / (positiveTradeCounter + negativeTradeCounter)) * 100).toFixed(2))
-        tradingStatistic.totalProfitPercentage = this.calculateSumOfArray(profits).toFixed(2)
-        tradingStatistic.mean = this.calculateMeanOfArray(profits).toFixed(2)
-        tradingStatistic.standardDeviation = this.calculateStandardDeviationOfArray(profits).toFixed(2)
-      }
+      tradingStatistic.successRate = calculateSuccessRate(positiveTradeCounter, negativeTradeCounter)
+      tradingStatistic.totalProfitPercentage = calculateSumOfArray(profits)
+      tradingStatistic.mean = calculateMeanOfArray(profits)
+      tradingStatistic.standardDeviation = calculateStandardDeviationOfArray(profits)
       return tradingStatistic
     },
 
@@ -253,6 +221,10 @@ import {
       this.buySignals.splice(index, 1)
     },
 
+    clearSelectedSellSignal (index: number) {
+      this.sellSignals.splice(index, 1)
+    },
+
     resetBuyingStrategySelection () {
       this.buyingStrategySelection = ''
     },
@@ -265,41 +237,11 @@ import {
       startButtonText: 'Start Backtest' as string,
       timeSeriesTableTradingData: [{}] as timeSeriesTableData[],
       timeSeriesTableIndicatorData: '' as string,
-      availableEmaIndicators: [{
-        emaIndicatorLabel: 'last EMA',
-        emaIndicatorKey: 'lastEma'
-      }, {
-        emaIndicatorLabel: 'current EMA',
-        emaIndicatorKey: 'currentEma'
-      }] as emaIndicator[],
-      availableRsiIndicators: [{
-        rsiIndicatorLabel: 'last RSI',
-        rsiIndicatorKey: 'lastRsi'
-      }, {
-        rsiIndicatorLabel: 'current RSI',
-        rsiIndicatorKey: 'currentRsi'
-      }] as rsiIndicator[],
-      availableAdxIndicators: [{
-        adxIndicatorLabel: 'last ADX',
-        adxIndicatorKey: 'lastAdx'
-      }, {
-        adxIndicatorLabel: 'current ADX',
-        adxIndicatorKey: 'currentAdx'
-      }] as adxIndicator[],
-      availableBollingerIndicators: [{
-        bollingerIndicatorLabel: 'last Bollinger',
-        bollingerIndicatorKey: 'lastBollinger'
-      }, {
-        bollingerIndicatorLabel: 'current Bollinger',
-        bollingerIndicatorKey: 'currentBollinger'
-      }] as bollingerIndicator[],
-      availableStockParameters: [{
-        stockParameterLabel: 'stock price(open)',
-        stockParameterKey: 'openingStockPrice'
-      }, {
-        stockParameterLabel: 'stock price(close)',
-        stockParameterKey: 'closingStockPrice'
-      }] as stockParameters[],
+      availableEmaIndicators: ['last EMA', 'current EMA'] as string[],
+      availableRsiIndicators: ['last RSI', 'current RSI'] as string[],
+      availableAdxIndicators: ['last ADX', 'current ADX'] as string[],
+      availableBollingerIndicators: ['last Bollinger', 'current Bollinger'] as string[],
+      availableStockParameters: ['stock price(open)', 'stock price(close)'] as string[],
       availableOperators: ['>', '>=', '=', '<', '<='] as string[],
       availableRsiThresholds: ['10', '20', '30', '40', '50', '60', '70', '80'],
       availableAdxThresholds: ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70'],
@@ -368,11 +310,19 @@ import {
         operator: '',
         threshold: ''
       } as tradingSignal,
-      buySignals: [] as tradingSignal[],
+      buySignals: [{
+        indicator: 'last EMA',
+        operator: '>',
+        threshold: 'stock price(close)'
+      }] as tradingSignal[],
       buySignalsTableText: 'Selected Buy-Signals' as string,
       buySignalTableHeaders: ['Indicator', 'Operator', 'Threshold', ''] as string[],
       selectBuySignalWarning: 'Please select at least one Buy-Signal' as string,
-      sellSignals: [] as tradingSignal[],
+      sellSignals: [{
+        indicator: 'last EMA',
+        operator: '<=',
+        threshold: 'stock price(close)'
+      }] as tradingSignal[],
       sellSignalsTableText: 'Selected Sell-Signals' as string,
       sellSignalTableHeaders: ['Indicator', 'Operator', 'Threshold', ''] as string[],
       selectSellSignalWarning: 'Please select at least one Sell-Signal' as string,
@@ -386,8 +336,8 @@ import {
         mean: 0,
         standardDeviation: 0
       },
-      tradingStatisticsTradeHeaders: ['Getätigte Trades', 'positive Trades', 'negative Trades', 'Erfolgsquote'],
-      tradingStatisticsPerformanceHeaders: ['Gesamtgewinn (%)', 'Erwartungswert', 'Standardabweichung'],
+      tradingStatisticsTradeHeaders: ['Trades(total)', 'positive Trades', 'negative Trades', 'Success rate'],
+      tradingStatisticsPerformanceHeaders: ['Total Earnings (%)', 'Mean', 'Standard deviation'],
       apiToken: '82535d7d9eb84b5d905463e011aaaee8' as string
     }
   }

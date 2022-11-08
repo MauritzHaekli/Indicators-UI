@@ -43,7 +43,7 @@
               <div v-if="buyingStrategySelection === 'ema'" class="buyingStrategySelection">
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="currentBuySignal.indicator">
-                  <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{ emaIndicator.emaIndicatorLabel }}</option>
+                  <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator" >{{ emaIndicator }}</option>
                 </select>
                 <p>{{ strategySelectionOperatorText }} </p>
                 <select v-model="currentBuySignal.operator">
@@ -51,8 +51,8 @@
                 </select>
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="currentBuySignal.threshold">
-                  <option v-for="stockIndicator in availableStockParameters" :key="stockIndicator.stockParameterKey" :value="stockIndicator.stockParameterKey">{{ stockIndicator.stockParameterLabel }}</option>
-                  <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{emaIndicator.emaIndicatorLabel}}</option>
+                  <option v-for="stockIndicator in availableStockParameters" :key="stockIndicator" >{{ stockIndicator }}</option>
+                  <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator" >{{emaIndicator}}</option>
                 </select>
                 <div class="strategyClearButton">
                   <button type="button" v-on:click="clearCurrentBuySignal(); resetBuyingStrategySelection()">
@@ -68,7 +68,7 @@
               <div v-if="buyingStrategySelection === 'rsi'" class="buyingStrategySelection">
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="currentBuySignal.indicator">
-                  <option v-for="rsiIndicator in availableRsiIndicators" :key="rsiIndicator.rsiIndicatorKey" :value="rsiIndicator.rsiIndicatorKey">{{ rsiIndicator.rsiIndicatorLabel }}</option>
+                  <option v-for="rsiIndicator in availableRsiIndicators" :key="rsiIndicator" >{{ rsiIndicator }}</option>
                 </select>
                 <p>{{ strategySelectionOperatorText }} </p>
                 <select v-model="currentBuySignal.operator">
@@ -92,7 +92,7 @@
               <div v-if="buyingStrategySelection === 'adx'" class="buyingStrategySelection">
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="currentBuySignal.indicator">
-                  <option v-for="adxIndicator in availableAdxIndicators" :key="adxIndicator.adxIndicatorKey" :value="adxIndicator.adxIndicatorKey">{{ adxIndicator.adxIndicatorLabel }}</option>
+                  <option v-for="adxIndicator in availableAdxIndicators" :key="adxIndicator">{{ adxIndicator }}</option>
                 </select>
                 <p>{{ strategySelectionOperatorText }} </p>
                 <select v-model="currentBuySignal.operator">
@@ -116,7 +116,7 @@
               <div v-if="buyingStrategySelection === 'bollinger'" class="buyingStrategySelection">
                 <p>{{ strategySelectionIndicatorText }} </p>
                 <select v-model="currentBuySignal.indicator">
-                  <option v-for="bollingerIndicator in availableBollingerIndicators" :key="bollingerIndicator.bollingerIndicatorKey" :value="bollingerIndicator.bollingerIndicatorKey">{{ bollingerIndicator.bollingerIndicatorLabel }}</option>
+                  <option v-for="bollingerIndicator in availableBollingerIndicators" :key="bollingerIndicator" >{{ bollingerIndicator }}</option>
                 </select>
                 <p>{{ strategySelectionOperatorText }} </p>
                 <select v-model="currentBuySignal.operator">
@@ -150,7 +150,7 @@
                 <div v-if="sellingStrategySelection === 'ema'" class="sellingStrategySelection">
                   <p>{{ strategySelectionIndicatorText }} </p>
                   <select v-model="currentSellSignal.indicator">
-                    <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{ emaIndicator.emaIndicatorLabel }}</option>
+                    <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator" >{{ emaIndicator }}</option>
                   </select>
                   <p>{{ strategySelectionOperatorText }} </p>
                   <select v-model="currentSellSignal.operator">
@@ -158,8 +158,8 @@
                   </select>
                   <p>{{ strategySelectionIndicatorText }} </p>
                   <select v-model="currentSellSignal.threshold">
-                    <option v-for="stockIndicator in availableStockParameters" :key="stockIndicator.stockParameterKey" :value="stockIndicator.stockParameterKey">{{ stockIndicator.stockParameterLabel }}</option>
-                    <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator.emaIndicatorKey" :value="emaIndicator.emaIndicatorKey">{{emaIndicator.emaIndicatorLabel}}</option>
+                    <option v-for="stockIndicator in availableStockParameters" :key="stockIndicator" >{{ stockIndicator }}</option>
+                    <option v-for="emaIndicator in availableEmaIndicators" :key="emaIndicator" :value="emaIndicator">{{emaIndicator}}</option>
                   </select>
                   <div class="strategyClearButton">
                     <button type="button" v-on:click="clearCurrentSellSignal(); resetSellingStrategySelection()">
@@ -175,7 +175,7 @@
                 <div v-if="sellingStrategySelection === 'rsi'" class="sellingStrategySelection">
                   <p>{{ strategySelectionIndicatorText }} </p>
                   <select v-model="currentSellSignal.indicator">
-                    <option v-for="rsiIndicator in availableRsiIndicators" :key="rsiIndicator.rsiIndicatorKey" :value="rsiIndicator.rsiIndicatorKey">{{ rsiIndicator.rsiIndicatorLabel }}</option>
+                    <option v-for="rsiIndicator in availableRsiIndicators" :key="rsiIndicator" >{{ rsiIndicator }}</option>
                   </select>
                   <p>{{ strategySelectionOperatorText }} </p>
                   <select v-model="currentSellSignal.operator">
@@ -199,7 +199,7 @@
                 <div v-if="sellingStrategySelection === 'adx'" class="sellingStrategySelection">
                   <p>{{ strategySelectionIndicatorText }} </p>
                   <select v-model="currentSellSignal.indicator">
-                    <option v-for="adxIndicator in availableAdxIndicators" :key="adxIndicator.adxIndicatorKey" :value="adxIndicator.adxIndicatorKey">{{ adxIndicator.adxIndicatorLabel }}</option>
+                    <option v-for="adxIndicator in availableAdxIndicators" :key="adxIndicator">{{ adxIndicator }}</option>
                   </select>
                   <p>{{ strategySelectionOperatorText }} </p>
                   <select v-model="currentSellSignal.operator">
@@ -223,7 +223,7 @@
                 <div v-if="sellingStrategySelection === 'bollinger'" class="sellingStrategySelection">
                   <p>{{ strategySelectionIndicatorText }} </p>
                   <select v-model="currentSellSignal.indicator">
-                    <option v-for="bollingerIndicator in availableBollingerIndicators" :key="bollingerIndicator.bollingerIndicatorKey" :value="bollingerIndicator.bollingerIndicatorKey">{{ bollingerIndicator.bollingerIndicatorLabel }}</option>
+                    <option v-for="bollingerIndicator in availableBollingerIndicators" :key="bollingerIndicator">{{ bollingerIndicator }}</option>
                   </select>
                   <p>{{ strategySelectionOperatorText }} </p>
                   <select v-model="currentSellSignal.operator">
@@ -300,10 +300,15 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="sellSignal in sellSignals" :key="sellSignal">
+                    <tr v-for="(sellSignal, sellSignalIndex) in sellSignals" :key="sellSignal">
                       <td>{{sellSignal.indicator}}</td>
                       <td>{{sellSignal.operator}}</td>
                       <td>{{sellSignal.threshold}}</td>
+                      <td>
+                        <button type="button" v-on:click="clearSelectedSellSignal(sellSignalIndex)">
+                          <font-awesome-icon icon="fa-solid fa-trash" />
+                        </button>
+                      </td>
                     </tr>
                   </tbody>
                 </table>

@@ -10,6 +10,7 @@ import {
 } from '@/assets/types'
 
 import {
+  isTradingEquationFulfilled,
   calculateSuccessRate,
   calculateTradeProfitAbsolute,
   calculateTradeProfitRelative,
@@ -60,21 +61,11 @@ import {
       return stockData
     },
 
-    isTradingEquationFulfilled (indicator: string, operator: string, threshold: string) {
-      switch (operator) {
-        case '>': return parseFloat(indicator) > parseFloat(threshold)
-        case '<': return parseFloat(indicator) < parseFloat(threshold)
-        case '>=': return parseFloat(indicator) >= parseFloat(threshold)
-        case '<=': return parseFloat(indicator) <= parseFloat(threshold)
-        case '=': return parseFloat(indicator) === parseFloat(threshold)
-      }
-    },
-
     getTimeSeriesTableColumns (timeSeriesTableData: timeSeriesTableData[]): string[] {
       return Object.keys(timeSeriesTableData[0])
     },
 
-    getCurrentSignalTableDataEntry (tableDataKey: string, tableData: timeSeriesTableData[], tableDataIndex: number) {
+    getCurrentSignalTableDataEntry (tableDataKey: string, tableData: timeSeriesTableData[], tableDataIndex: number):number {
       switch (tableDataKey) {
         case 'last EMA': return parseFloat(tableData[tableDataIndex - 1].ema as string)
         case 'current EMA': return parseFloat(tableData[tableDataIndex].ema as string)
@@ -86,7 +77,7 @@ import {
         case 'current ADX': return parseFloat(tableData[tableDataIndex].adx as string)
         case 'last Bollinger': return parseFloat(tableData[tableDataIndex - 1].percent_b as string)
         case 'current Bollinger': return parseFloat(tableData[tableDataIndex].percent_b as string)
-        default: return tableDataKey
+        default: return 0
       }
     },
 
@@ -101,9 +92,9 @@ import {
         const tableDataIndexSufficient: boolean = tableDataIndex > 0
         if (tableDataIndexSufficient) {
           buySignals.forEach(buySignal => {
-            const currentBuySignalIndicator: string = this.getCurrentSignalTableDataEntry(buySignal.indicator, tableData, tableDataIndex)
-            const currentBuySignalThreshold: string = this.getCurrentSignalTableDataEntry(buySignal.threshold, tableData, tableDataIndex)
-            const buySignalFulfilled: boolean = this.isTradingEquationFulfilled(currentBuySignalIndicator, buySignal.operator, currentBuySignalThreshold)
+            const currentBuySignalIndicator: number = this.getCurrentSignalTableDataEntry(buySignal.indicator, tableData, tableDataIndex)
+            const currentBuySignalThreshold: number = this.getCurrentSignalTableDataEntry(buySignal.threshold, tableData, tableDataIndex)
+            const buySignalFulfilled: boolean = isTradingEquationFulfilled(currentBuySignalIndicator, buySignal.operator, currentBuySignalThreshold)
             const currentlyNotInTrade: boolean = tableData[tableDataIndex - 1].signal === this.waitSignalText
             if (currentlyNotInTrade && buySignalFulfilled) {
               buySignalsFulfilledCounter += 1
@@ -120,7 +111,7 @@ import {
             const currentlyInTrade: boolean = tableData[tableDataIndex - 1].signal === this.buySignalText || tableData[tableDataIndex - 1].signal === this.holdSignalText
             const currentSellSignalIndicator: number = this.getCurrentSignalTableDataEntry(sellSignal.indicator, tableData, tableDataIndex)
             const currentSellSignalThreshold: number = this.getCurrentSignalTableDataEntry(sellSignal.threshold, tableData, tableDataIndex)
-            const sellSignalFulfilled: boolean = this.isTradingEquationFulfilled(currentSellSignalIndicator, sellSignal.operator, currentSellSignalThreshold)
+            const sellSignalFulfilled: boolean = isTradingEquationFulfilled(currentSellSignalIndicator, sellSignal.operator, currentSellSignalThreshold)
             if (currentlyInTrade && sellSignalFulfilled) {
               sellSignalsFulfilledCounter += 1
               if (sellSignalsFulfilledCounter === sellSignals.length) {
@@ -194,12 +185,11 @@ import {
     addTradingSignal (addedTradingStrategy: string, tradingSignal: tradingSignal) {
       if (addedTradingStrategy === 'BuyStrategy') {
         this.buySignals.push(tradingSignal)
-        this.clearCurrentBuySignal()
       }
       if (addedTradingStrategy === 'SellStrategy') {
         this.sellSignals.push(tradingSignal)
-        this.clearCurrentSellSignal()
       }
+      this.clearCurrentBuySignal()
     },
 
     clearCurrentBuySignal () {
@@ -246,7 +236,6 @@ import {
       availableRsiThresholds: ['10', '20', '30', '40', '50', '60', '70', '80'],
       availableAdxThresholds: ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70'],
       availableBollingerThresholds: ['-1.5', '-1', '-0.5', '0', '0.25', '0.5', '0.75', '1', '1.25', '1.5'],
-      availableThresholds: ['0', '0.5', '1', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75'] as string[],
       availableStrategies: [{
         selectionText: 'EMA-Strategy',
         selectionKey: 'ema'

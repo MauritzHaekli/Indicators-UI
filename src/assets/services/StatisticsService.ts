@@ -1,3 +1,14 @@
+export function isTradingEquationFulfilled (indicator: number, operator: string, threshold: number): boolean {
+  switch (operator) {
+    case '>': return indicator > threshold
+    case '<': return indicator < threshold
+    case '>=': return indicator >= threshold
+    case '<=': return indicator <= threshold
+    case '=': return indicator === threshold
+    default: return false
+  }
+}
+
 export function calculateTradeProfitAbsolute (openingPrice: number, closingPrice: number): number {
   return Number((closingPrice - openingPrice).toFixed(2))
 }

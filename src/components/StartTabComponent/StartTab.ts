@@ -227,27 +227,28 @@ import {
       startButtonText: 'Start Backtest' as string,
       timeSeriesTableTradingData: [{}] as timeSeriesTableData[],
       timeSeriesTableIndicatorData: '' as string,
-      availableEmaIndicators: ['last EMA', 'current EMA'] as string[],
-      availableRsiIndicators: ['last RSI', 'current RSI'] as string[],
-      availableAdxIndicators: ['last ADX', 'current ADX'] as string[],
-      availableBollingerIndicators: ['last Bollinger', 'current Bollinger'] as string[],
-      availableStockParameters: ['stock price(open)', 'stock price(close)'] as string[],
       availableOperators: ['>', '>=', '=', '<', '<='] as string[],
-      availableRsiThresholds: ['10', '20', '30', '40', '50', '60', '70', '80'],
-      availableAdxThresholds: ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70'],
-      availableBollingerThresholds: ['-1.5', '-1', '-0.5', '0', '0.25', '0.5', '0.75', '1', '1.25', '1.5'],
       availableStrategies: [{
         selectionText: 'EMA-Strategy',
-        selectionKey: 'ema'
+        selectionKey: 'ema',
+        indicators: ['last EMA', 'current EMA'] as string[],
+        thresholds: ['last EMA', 'current EMA', 'stock price(open)', 'stock price(close)']
       }, {
         selectionText: 'RSI-Strategy',
-        selectionKey: 'rsi'
+        selectionKey: 'rsi',
+        indicators: ['last RSI', 'current RSI'] as string[],
+        thresholds: ['10', '20', '30', '40', '50', '60', '70', '80']
+
       }, {
         selectionText: 'ADX-Strategy',
-        selectionKey: 'adx'
+        selectionKey: 'adx',
+        indicators: ['last ADX', 'current ADX'] as string[],
+        thresholds: ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70']
       }, {
         selectionText: 'Bollinger-Strategy',
-        selectionKey: 'bollinger'
+        selectionKey: 'bollinger',
+        indicators: ['last Bollinger', 'current Bollinger'] as string[],
+        thresholds: ['-1.5', '-1', '-0.5', '0', '0.25', '0.5', '0.75', '1', '1.25', '1.5']
       }],
       selectedStocks: 'TSLA' as string,
       selectedIndicators: ['ema', 'rsi', 'adx', 'percent_b'] as string[],

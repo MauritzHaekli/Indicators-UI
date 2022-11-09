@@ -6,7 +6,7 @@ import {
   timeSeriesStockData,
   timeSeriesTableData,
   tradingSignal,
-  tradingStatistic
+  tradingStatistic, tradingStrategy
 } from '@/assets/types'
 
 import {
@@ -231,25 +231,25 @@ import {
       availableStrategies: [{
         selectionText: 'EMA-Strategy',
         selectionKey: 'ema',
-        indicators: ['last EMA', 'current EMA'] as string[],
+        indicators: ['last EMA', 'current EMA'],
         thresholds: ['last EMA', 'current EMA', 'stock price(open)', 'stock price(close)']
       }, {
         selectionText: 'RSI-Strategy',
         selectionKey: 'rsi',
-        indicators: ['last RSI', 'current RSI'] as string[],
+        indicators: ['last RSI', 'current RSI'],
         thresholds: ['10', '20', '30', '40', '50', '60', '70', '80']
 
       }, {
         selectionText: 'ADX-Strategy',
         selectionKey: 'adx',
-        indicators: ['last ADX', 'current ADX'] as string[],
+        indicators: ['last ADX', 'current ADX'],
         thresholds: ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70']
       }, {
         selectionText: 'Bollinger-Strategy',
         selectionKey: 'bollinger',
-        indicators: ['last Bollinger', 'current Bollinger'] as string[],
+        indicators: ['last Bollinger', 'current Bollinger'],
         thresholds: ['-1.5', '-1', '-0.5', '0', '0.25', '0.5', '0.75', '1', '1.25', '1.5']
-      }],
+      }] as tradingStrategy[],
       selectedStocks: 'TSLA' as string,
       selectedIndicators: ['ema', 'rsi', 'adx', 'percent_b'] as string[],
       selectedOrder: 'ASC' as string,

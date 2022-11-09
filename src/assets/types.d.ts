@@ -54,6 +54,13 @@ export interface tradingStatistic {
   standardDeviation: number
 }
 
+export interface tradingStrategy {
+  selectionText: string,
+  selectionKey: string,
+  indicators: string[],
+  thresholds: string[]
+}
+
 export interface timeSeriesData {
   data: timeSeriesStockMetaData,
   values: timeSeriesStockData[],

@@ -77,7 +77,7 @@
                   </select>
                 </div>
                 <div v-for="availableStrategy in availableStrategies" :key="availableStrategy.selectionKey" >
-                  <div v-if="buyingStrategySelection === availableStrategy.selectionKey" class="sellingStrategySelection">
+                  <div v-if="sellingStrategySelection === availableStrategy.selectionKey" class="sellingStrategySelection">
                     <p>{{ strategySelectionIndicatorText }} </p>
                     <select v-model="currentSellSignal.indicator">
                       <option v-for="indicator in availableStrategy.indicators" :key="indicator" >{{ indicator }}</option>
@@ -103,10 +103,10 @@
                   </div>
                 </div>
               </div>
-              <div class="startTabBacktestButton">
-                <button type="button" v-on:click="this.setTimeSeriesData(selectedStocks, selectedIndicators, selectedOrder, selectedInterval, selectedDataSize, selectedDecimalSize)">{{ startButtonText }}</button>
-              </div>
             </div>
+          </div>
+          <div class="startTabBacktestButton">
+            <button type="button" v-on:click="this.setTimeSeriesData(selectedStocks, selectedIndicators, selectedOrder, selectedInterval, selectedDataSize, selectedDecimalSize)">{{ startButtonText }}</button>
           </div>
         </div>
         <div class="startTabTradingSignalsDisplay">

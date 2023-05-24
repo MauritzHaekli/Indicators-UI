@@ -4,7 +4,7 @@ import {
   intervalType,
   timeSeriesIndicatorData,
   timeSeriesStockData,
-  timeSeriesTableData,
+  tradingTableData,
   tradingSignal,
   tradingStatistic, tradingStrategy
 } from '@/assets/types'
@@ -17,13 +17,10 @@ import {
   calculateSumOfArray,
   calculateMeanOfArray,
   calculateStandardDeviationOfArray
-} from '@/assets/services/StatisticsService'
+} from '@/services/StatisticsService'
 
 @Options({
   props: {
-  },
-  computed: {
-
   },
 
   methods: {
@@ -45,11 +42,11 @@ import {
       }
     },
 
-    mergeIndicatorDataToTimeSeries (timeSeriesStockArray: timeSeriesTableData[], timeSeriesIndicatorArray: timeSeriesIndicatorData): timeSeriesTableData[] {
-      return timeSeriesStockArray.map((timeSeriesStockDataItem: timeSeriesTableData, index: number) => Object.assign({}, timeSeriesStockDataItem, timeSeriesIndicatorArray[index]))
+    mergeIndicatorDataToTimeSeries (timeSeriesStockArray: tradingTableData[], timeSeriesIndicatorArray: timeSeriesIndicatorData): tradingTableData[] {
+      return timeSeriesStockArray.map((timeSeriesStockDataItem: tradingTableData, index: number) => Object.assign({}, timeSeriesStockDataItem, timeSeriesIndicatorArray[index]))
     },
 
-    mergeTradingStatisticsToStockData (stockData: timeSeriesStockData[]): timeSeriesTableData[] {
+    mergeTradingStatisticsToStockData (stockData: timeSeriesStockData[]): tradingTableData[] {
       const tradingStatisticsEntry = {
         signal: '',
         profit: '',
@@ -61,11 +58,11 @@ import {
       return stockData
     },
 
-    getTimeSeriesTableColumns (timeSeriesTableData: timeSeriesTableData[]): string[] {
+    getTimeSeriesTableColumns (timeSeriesTableData: tradingTableData[]): string[] {
       return Object.keys(timeSeriesTableData[0])
     },
 
-    getCurrentSignalTableDataEntry (tableDataKey: string, tableData: timeSeriesTableData[], tableDataIndex: number):number {
+    getCurrentSignalTableDataEntry (tableDataKey: string, tableData: tradingTableData[], tableDataIndex: number):number {
       switch (tableDataKey) {
         case 'last EMA': return parseFloat(tableData[tableDataIndex - 1].ema as string)
         case 'current EMA': return parseFloat(tableData[tableDataIndex].ema as string)
@@ -81,8 +78,8 @@ import {
       }
     },
 
-    getTableTradingData (stockData: timeSeriesStockData[], buySignals: tradingSignal[], sellSignals: tradingSignal[]): timeSeriesTableData[] {
-      const tableData: timeSeriesTableData[] = this.mergeTradingStatisticsToStockData(stockData)
+    getTradingTableData (stockData: timeSeriesStockData[], buySignals: tradingSignal[], sellSignals: tradingSignal[]): tradingTableData[] {
+      const tableData: tradingTableData[] = this.mergeTradingStatisticsToStockData(stockData)
       let tradeOpeningPrice = 0
 
       tableData.forEach((tableDataEntry, tableDataIndex) => {
@@ -136,7 +133,7 @@ import {
       return tableData
     },
 
-    getTradingStatistics (tableData: timeSeriesTableData[], tradingStatistic: tradingStatistic): tradingStatistic {
+    getTradingStatistics (tableData: tradingTableData[], tradingStatistic: tradingStatistic): tradingStatistic {
       let totalTradeCounter = 0
       let positiveTradeCounter = 0
       let negativeTradeCounter = 0
@@ -165,7 +162,7 @@ import {
     async setTimeSeriesData (stock: string, indicators: string[], order: string, interval: string, outputsize: string, decimalSize: string) {
       let stockData: timeSeriesStockData[] = [{}]
       let indicatorData: timeSeriesStockData[] = [{}]
-      let tableTradingData : timeSeriesTableData[] = [{}]
+      let tableTradingData : tradingTableData[] = [{}]
       await this.getTimeSeriesStockData(stock, order, interval, outputsize, decimalSize).then(async (response: AxiosResponse) => {
         stockData = response.data.values
         for (const indicator of indicators) {
@@ -175,11 +172,11 @@ import {
           })
         }
       })
-      tableTradingData = this.getTableTradingData(stockData, this.buySignals, this.sellSignals)
-      this.timeSeriesTableTradingData = tableTradingData
+      tableTradingData = this.getTradingTableData(stockData, this.buySignals, this.sellSignals)
+      this.TradingTableData = tableTradingData
       this.tradingStatistic = this.getTradingStatistics(tableTradingData, this.tradingStatistic)
-      this.timeSeriesTableColumns = this.getTimeSeriesTableColumns(this.timeSeriesTableTradingData)
-      this.showTradingData = true
+      this.tradingTableColumnHeaders = this.getTimeSeriesTableColumns(this.TradingTableData)
+      this.showTradingTableData = true
     },
 
     addTradingSignal (addedTradingStrategy: string, tradingSignal: tradingSignal) {
@@ -220,13 +217,25 @@ import {
     },
     resetSellingStrategySelection () {
       this.sellingStrategySelection = ''
+    },
+
+    previousPage () {
+      if (this.currentPage > 1) {
+        this.currentPage--
+      }
+    },
+    nextPage () {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++
+      }
     }
   },
   data () {
     return {
       startButtonText: 'Start Backtest' as string,
-      timeSeriesTableTradingData: [{}] as timeSeriesTableData[],
-      timeSeriesTableIndicatorData: '' as string,
+      TradingTableData: [{}] as tradingTableData[],
+      itemsPerPage: 100,
+      currentPage: 1,
       availableOperators: ['>', '>=', '=', '<', '<='] as string[],
       availableStrategies: [{
         selectionText: 'EMA-Strategy',
@@ -271,7 +280,7 @@ import {
       sellingStrategyAddStrategy: 'Add a Sell-Strategy: ' as string,
       sellingStrategySelectionLabel: '-- Select a strategy --' as string,
       sellingStrategySelection: '' as string,
-      showTradingData: false,
+      showTradingTableData: false,
       buySignalText: 'Buy',
       holdSignalText: 'Hold',
       sellSignalText: 'Sell',
@@ -316,7 +325,7 @@ import {
       sellSignalsTableText: 'Selected Sell-Signals' as string,
       sellSignalTableHeaders: ['Indicator', 'Operator', 'Threshold', ''] as string[],
       selectSellSignalWarning: 'Please select at least one Sell-Signal' as string,
-      timeSeriesTableColumns: [] as string[],
+      tradingTableColumnHeaders: [] as string[],
       tradingStatistic: {
         totalTrades: 0,
         positiveTrades: 0,
@@ -329,6 +338,24 @@ import {
       tradingStatisticsTradeHeaders: ['Trades(total)', 'positive Trades', 'negative Trades', 'Success rate'],
       tradingStatisticsPerformanceHeaders: ['Total Earnings (%)', 'Mean', 'Standard deviation'],
       apiToken: '82535d7d9eb84b5d905463e011aaaee8' as string
+    }
+  },
+
+  computed: {
+    paginatedData () {
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage
+      const endIndex = startIndex + this.itemsPerPage
+      return this.TradingTableData.slice(startIndex, endIndex)
+    },
+    totalPages () {
+      return Math.ceil(this.TradingTableData.length / this.itemsPerPage)
+    },
+
+    isFirstPage () {
+      return this.currentPage === 1
+    },
+    isLastPage () {
+      return this.currentPage === this.totalPages
     }
   }
 })

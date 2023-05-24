@@ -31,7 +31,7 @@ export interface timeSeriesIndicatorData {
   [indicator: string]: string
 }
 
-export interface timeSeriesTableData {
+export interface tradingTableData {
   datetime?: string,
   open?: string,
   high?: string,
@@ -59,12 +59,6 @@ export interface tradingStrategy {
   selectionKey: string,
   indicators: string[],
   thresholds: string[]
-}
-
-export interface timeSeriesData {
-  data: timeSeriesStockMetaData,
-  values: timeSeriesStockData[],
-  status: string
 }
 
 export interface intervalType {

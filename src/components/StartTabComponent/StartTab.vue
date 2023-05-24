@@ -209,25 +209,30 @@
           </div>
         </div>
       </div>
-      <div class="startTabTradingData" v-if="showTradingData">
+      <div class="startTabTradingData" v-if="showTradingTableData">
         <div class="startTabTradingDataContent">
           <div class="tradingDataTable table-responsive table-scroll">
             <table class="table table-striped mb-0">
               <thead>
               <tr>
-                <th scope="col" v-for="timeSeriesTableColumn in timeSeriesTableColumns" :key="timeSeriesTableColumn">
+                <th scope="col" v-for="timeSeriesTableColumn in tradingTableColumnHeaders" :key="timeSeriesTableColumn">
                   {{timeSeriesTableColumn}}
                 </th>
               </tr>
               </thead>
               <tbody>
-              <tr v-for="value in timeSeriesTableTradingData" :key="value">
+              <tr v-for="value in paginatedData" :key="value">
                 <td v-for="(cellData, index) in value" :key="index" v-bind:class="{timeSeriesTableSignalCell: cellData === buySignalText || cellData === holdSignalText || cellData === sellSignalText}">
                   {{cellData}}
                 </td>
               </tr>
               </tbody>
             </table>
+            <div class="tablePagination">
+              <button @click="previousPage" :disabled="isFirstPage">Previous</button>
+              <span>{{ currentPage }}</span>
+              <button @click="nextPage" :disabled="isLastPage">Next</button>
+            </div>
           </div>
         </div>
       </div>

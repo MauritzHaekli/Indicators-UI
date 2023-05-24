@@ -30,11 +30,7 @@ export function calculateSumOfArray (array: number[]): number {
 }
 
 export function calculateMeanOfArray (array: number[]): number {
-  let meanOfArray = 0
-  array.forEach(arrayEntry => {
-    meanOfArray += arrayEntry
-  })
-  meanOfArray = meanOfArray / array.length
+  const meanOfArray = calculateSumOfArray(array) / array.length
   return parseFloat(meanOfArray.toFixed(2))
 }
 

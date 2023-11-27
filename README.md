@@ -1,4 +1,6 @@
-# indicators_ui
+# Indicators UI
+This project gives the user an opportunity to test and configure trading strategies based on technical indicators. 
+By selecting different metrics in a Vue3-based UI, the user is able to display stock data of a selected stock, including entry- and exit-points of a predefined trading strategy.  
 
 ## Project setup
 ```
